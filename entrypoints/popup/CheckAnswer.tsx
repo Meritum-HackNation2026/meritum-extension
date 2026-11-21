@@ -22,11 +22,14 @@ function Result({ result }: { result: CheckResult }) {
       </>
     )
   }
+  const claims = result.claims ?? []
   return (
     <>
+      {claims.length === 0 && <p>{copy.result.no_result_hint}</p>}
       <ul className="rows">
-        {result.claims?.map((claim) => (
-          <li key={claim.claim}>
+        {claims.map((claim, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: claims never reorder and two may share a text
+          <li key={i}>
             <span className="grow">
               {claim.claim}
               <span className="m">{claim.explanation}</span>

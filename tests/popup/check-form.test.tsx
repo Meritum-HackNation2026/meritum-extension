@@ -80,6 +80,20 @@ test('text over 4000 characters shows the web form message and sends nothing', (
   assert.deepEqual(api.sent, [])
 })
 
+test('a check with no claims says that no result is not a denial', async (t) => {
+  t.mock.method(globalThis, 'fetch', (_input: RequestInfo | URL, init?: RequestInit) => {
+    const done = { ...result, claims: [] }
+    return init?.method === 'POST'
+      ? Promise.resolve(Response.json({ check_id: 'c1', steps: [], result: done }))
+      : Promise.resolve(Response.json({ status: 'ok', env: 'prd', database: 'ok' }))
+  })
+  render(<App storage={storage} />)
+
+  ask('Od stycznia nie zapłacisz w sklepie gotówką')
+
+  assert.ok(await screen.findByText(copy.result.no_result_hint))
+})
+
 test('a rate-limited check shows the message, never a verdict', async (t) => {
   t.mock.method(globalThis, 'fetch', (input: RequestInfo | URL) =>
     String(input).endsWith('/api/v1/checks')
