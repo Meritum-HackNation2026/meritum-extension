@@ -19,5 +19,7 @@ test('the popup header names the API environment when the health check passes', 
 
   render(<App />)
 
-  assert.ok(await screen.findByText('API: prd'))
+  // getByRole throws on two headers, so this also fails when setup-dom skips cleanup.
+  const header = screen.getByRole('banner')
+  assert.ok(await within(header).findByText('API: prd'))
 })
