@@ -22,7 +22,8 @@ files=(
 )
 for f in "${files[@]}"; do
   mkdir -p "$(dirname "$f")"
-  gh api -H 'Accept: application/vnd.github.raw' "repos/$repo/contents/$f?ref=$ref" >"$f"
+  # The contents API path is a URL: encode spaces, the array keeps names whole.
+  gh api -H 'Accept: application/vnd.github.raw' "repos/$repo/contents/${f// /%20}?ref=$ref" >"$f"
 done
 
 printf 'meritum-design-system %s\n' "$ref" >SOURCE
