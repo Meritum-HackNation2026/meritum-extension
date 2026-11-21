@@ -6,12 +6,12 @@ Stos: [WXT](https://wxt.dev), React, TypeScript, Biome, pnpm. Specyfikacja wygl�
 
 Stan bootstrapu:
 
-| Plik                     | Co robi                                                                                                                      |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| `wxt.config.ts`          | manifest: nazwa, opis, `storage`, `activeTab`, `host_permissions` tylko dla API                                              |
-| `entrypoints/content.ts` | na prawdziwych serwisach i makietach `meritum-<platforma>[-dev].gburek.app` oznacza stronę atrybutem `data-meritum-platform` |
-| `entrypoints/popup/`     | popup ze stanem API (`/api/v1/health`)                                                                                       |
-| `utils/platform.ts`      | rozpoznanie platformy po hoście, z testami                                                                                   |
+| Plik                     | Co robi                                                                                                                                                                                                                    |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `wxt.config.ts`          | manifest: nazwa, opis, `storage`, `activeTab`, `host_permissions` tylko dla API                                                                                                                                            |
+| `entrypoints/content.ts` | na prawdziwych serwisach i makietach `meritum-<platforma>[-dev].gburek.app` oznacza stronę atrybutem `data-meritum-platform`                                                                                               |
+| `entrypoints/popup/`     | popup ze stanem API (`/api/v1/health`) w stylu z design systemu: `ui.css` i `popup.css` to kopie z `design-system/extension/` (bez importu Google Fonts), znak jak w makiecie popupu, kroje Archivo i Azeret Mono w paczce |
+| `utils/platform.ts`      | rozpoznanie platformy po hoście, z testami                                                                                                                                                                                 |
 
 Adres API wybiera się przy buildzie: domyślnie https://meritum.gburek.app, a `WXT_API_URL=https://meritum-dev.gburek.app pnpm build` buduje wersję dev.
 
