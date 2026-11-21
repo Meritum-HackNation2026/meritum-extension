@@ -10,6 +10,7 @@ import type { CheckResult } from '../design-system/contracts/meritum.ts'
 import { sendCheck, toCheckRequest } from './check.ts'
 
 const api = 'https://api.test'
+const session = 'sesja-1234'
 const result: CheckResult = { check_id: 'c1', status: 'out_of_scope', corpus_version: 'v1' }
 
 test('a full http(s) link becomes a url request on the extension channel', () => {
@@ -40,11 +41,12 @@ test('text of 4000 characters passes and 4001 is too long', () => {
   assert.equal(toCheckRequest('a'.repeat(4001)), 'too_long')
 })
 
-test('sendCheck posts the request and follows the status until the result', async (t) => {
+test('sendCheck posts the request with the session header and follows the status until the result', async (t) => {
   const calls: string[] = []
   let polls = 0
   t.mock.method(globalThis, 'fetch', (input: RequestInfo | URL, init?: RequestInit) => {
-    calls.push(`${init?.method ?? 'GET'} ${String(input)} ${String(init?.body ?? '')}`)
+    const header = new Headers(init?.headers).get('X-Meritum-Session')
+    calls.push(`${init?.method ?? 'GET'} ${String(input)} ${String(init?.body ?? '')} ${header}`)
     if (init?.method === 'POST') {
       return Promise.resolve(Response.json({ check_id: 'c1', steps: [] }, { status: 202 }))
     }
@@ -53,13 +55,17 @@ test('sendCheck posts the request and follows the status until the result', asyn
     return Promise.resolve(Response.json({ check_id: 'c1', steps: [], ...done }))
   })
 
-  const outcome = await sendCheck(api, { channel: 'extension', url: 'https://example.pl/a' })
+  const outcome = await sendCheck(
+    api,
+    { channel: 'extension', url: 'https://example.pl/a' },
+    session,
+  )
 
   assert.deepEqual(outcome, { result })
   assert.deepEqual(calls, [
-    `POST ${api}/api/v1/checks {"channel":"extension","url":"https://example.pl/a"}`,
-    `GET ${api}/api/v1/checks/c1 `,
-    `GET ${api}/api/v1/checks/c1 `,
+    `POST ${api}/api/v1/checks {"channel":"extension","url":"https://example.pl/a"} ${session}`,
+    `GET ${api}/api/v1/checks/c1  ${session}`,
+    `GET ${api}/api/v1/checks/c1  ${session}`,
   ])
 })
 
@@ -67,16 +73,16 @@ test('sendCheck reports the rate limit, a busy server, no network and other fail
   const answer = (status: number) => () => Promise.resolve(new Response(null, { status }))
   const request = { channel: 'extension', text: 'abc' } as const
   const fetchMock = t.mock.method(globalThis, 'fetch', answer(429))
-  assert.deepEqual(await sendCheck(api, request), { problem: 'rate_limited' })
+  assert.deepEqual(await sendCheck(api, request, session), { problem: 'rate_limited' })
 
   fetchMock.mock.mockImplementation(answer(503))
-  assert.deepEqual(await sendCheck(api, request), { problem: 'busy' })
+  assert.deepEqual(await sendCheck(api, request, session), { problem: 'busy' })
 
   fetchMock.mock.mockImplementation(answer(500))
-  assert.deepEqual(await sendCheck(api, request), { problem: 'failed' })
+  assert.deepEqual(await sendCheck(api, request, session), { problem: 'failed' })
 
   fetchMock.mock.mockImplementation(() => Promise.reject(new TypeError('offline')))
-  assert.deepEqual(await sendCheck(api, request), { problem: 'offline' })
+  assert.deepEqual(await sendCheck(api, request, session), { problem: 'offline' })
 })
 
 test('sendCheck treats a result with an unknown status or verdict as a failure', async (t) => {
@@ -84,11 +90,11 @@ test('sendCheck treats a result with an unknown status or verdict as a failure',
     Promise.resolve(Response.json({ check_id: 'c1', steps: [], result: { ...result, ...bad } }))
   const request = { channel: 'extension', text: 'abc' } as const
   const fetchMock = t.mock.method(globalThis, 'fetch', answer({ status: 'maybe' }))
-  assert.deepEqual(await sendCheck(api, request), { problem: 'failed' })
+  assert.deepEqual(await sendCheck(api, request, session), { problem: 'failed' })
 
   const claim = { claim: 'X', verdict: 'half_true', explanation: 'Y' }
   fetchMock.mock.mockImplementation(answer({ status: 'done', claims: [claim] }))
-  assert.deepEqual(await sendCheck(api, request), { problem: 'failed' })
+  assert.deepEqual(await sendCheck(api, request, session), { problem: 'failed' })
 })
 
 test('sendCheck treats a result the popup cannot render as a failure', async (t) => {
@@ -96,12 +102,39 @@ test('sendCheck treats a result the popup cannot render as a failure', async (t)
     Promise.resolve(Response.json({ check_id: 'c1', steps: [], result: { ...result, ...bad } }))
   const request = { channel: 'extension', text: 'abc' } as const
   const fetchMock = t.mock.method(globalThis, 'fetch', answer({ status: 'done', claims: 'abc' }))
-  assert.deepEqual(await sendCheck(api, request), { problem: 'failed' })
+  assert.deepEqual(await sendCheck(api, request, session), { problem: 'failed' })
 
   const claim = { claim: { x: 1 }, verdict: 'false', explanation: 'Y' }
   fetchMock.mock.mockImplementation(answer({ status: 'done', claims: [claim] }))
-  assert.deepEqual(await sendCheck(api, request), { problem: 'failed' })
+  assert.deepEqual(await sendCheck(api, request, session), { problem: 'failed' })
 
   fetchMock.mock.mockImplementation(answer({ message: { x: 1 } }))
-  assert.deepEqual(await sendCheck(api, request), { problem: 'failed' })
+  assert.deepEqual(await sendCheck(api, request, session), { problem: 'failed' })
+})
+
+test('sendCheck treats citations the widget cannot render as a failure', async (t) => {
+  const withCitation = (citation: unknown) => () =>
+    Promise.resolve(
+      Response.json({
+        check_id: 'c1',
+        result: {
+          ...result,
+          status: 'done',
+          claims: [{ claim: 'X', verdict: 'false', explanation: 'Y', citations: [citation] }],
+        },
+      }),
+    )
+  const request = { channel: 'extension', text: 'abc' } as const
+  const source = { title: 'T', publisher: 'P', url: 'https://a.pl', kind: 'media', tier: 'primary' }
+  const fetchMock = t.mock.method(globalThis, 'fetch', withCitation({ source, fragment: 'F' }))
+  assert.ok('result' in (await sendCheck(api, request, session)))
+
+  for (const bad of [
+    null,
+    { source, fragment: 1 },
+    { source: { ...source, url: 2 }, fragment: 'F' },
+  ]) {
+    fetchMock.mock.mockImplementation(withCitation(bad))
+    assert.deepEqual(await sendCheck(api, request, session), { problem: 'failed' })
+  }
 })

@@ -1,0 +1,78 @@
+import widgetCss from '../../design-system/extension/widget.css?inline'
+import { SCAN_DELAY_MS, THEME_ATTRIBUTES } from '../../utils/constants.ts'
+import { platformOf } from '../../utils/platform.ts'
+import type { PostCheckMessage, PostOutcome } from '../../utils/post-check.ts'
+import { postAdapter } from '../../utils/posts/index.ts'
+import { isDarkBackground } from '../../utils/theme.ts'
+import { scanner } from './mount.tsx'
+
+// Computed background of <body>, then <html>; with neither opaque, the system setting.
+function pageIsDark(): boolean {
+  for (const el of [document.body, document.documentElement]) {
+    const dark = isDarkBackground(getComputedStyle(el).backgroundColor)
+    if (dark !== null) return dark
+  }
+  return matchMedia('(prefers-color-scheme: dark)').matches
+}
+
+function followTheme(): void {
+  const apply = () => {
+    const dark = pageIsDark()
+    for (const el of document.querySelectorAll('meritum-root')) el.classList.toggle('dark', dark)
+  }
+  const observer = new MutationObserver(() => requestAnimationFrame(apply))
+  for (const el of [document.documentElement, document.body]) {
+    observer.observe(el, { attributes: true, attributeFilter: [...THEME_ATTRIBUTES] })
+  }
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', apply)
+}
+
+/**
+ * Content script on the five platforms and their mocks: puts „Sprawdź” under every post in
+ * its own Shadow DOM (ADR-09) by the shared selector contract (ADR-10). The post goes to the
+ * background, and from there to the API, only after a trusted click; the feed is never sent.
+ *
+ * @feature US-WTY-01, US-WTY-04, US-WTY-05, F-02, ADR-09, ADR-10
+ */
+export default defineContentScript({
+  matches: [
+    '*://x.com/*',
+    '*://*.x.com/*',
+    '*://twitter.com/*',
+    '*://*.twitter.com/*',
+    '*://*.facebook.com/*',
+    '*://*.instagram.com/*',
+    '*://*.reddit.com/*',
+    '*://*.tiktok.com/*',
+    'https://*.gburek.app/*',
+  ],
+  runAt: 'document_idle',
+  main() {
+    const platform = platformOf(location.hostname)
+    if (!platform) return
+    document.documentElement.dataset['meritumPlatform'] = platform
+    const sheet = new CSSStyleSheet()
+    sheet.replaceSync(widgetCss)
+    const scan = scanner({
+      platform,
+      adapter: postAdapter(platform, () => location.href),
+      sheet,
+      dark: pageIsDark,
+      // The background validates the API answer (utils/check.ts) before it replies.
+      send: (message: PostCheckMessage) =>
+        browser.runtime.sendMessage(message) as Promise<PostOutcome>,
+    })
+    scan(document)
+    // Feeds load posts without a reload: one throttled rescan per burst of mutations.
+    let pending = false
+    new MutationObserver(() => {
+      if (pending) return
+      pending = true
+      setTimeout(() => {
+        pending = false
+        scan(document)
+      }, SCAN_DELAY_MS)
+    }).observe(document.body, { childList: true, subtree: true })
+    followTheme()
+  },
+})

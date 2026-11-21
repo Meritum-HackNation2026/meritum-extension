@@ -21,6 +21,7 @@ import {
   MIN_TEXT_CHARS,
   POLL_INTERVAL_MS,
   POLL_MAX_ATTEMPTS,
+  SESSION_HEADER,
 } from './constants.ts'
 
 /**
@@ -68,10 +69,29 @@ export function toCheckRequest(raw: string): CheckRequest | InputError {
     const url = toUrl(value)
     return url === null ? 'invalid_url' : { channel: 'extension', url }
   }
+  return toTextRequest(value)
+}
+
+function toTextRequest(value: string): CheckRequest | InputError {
   // Code points, as the API's Python len() counts them.
   const length = [...value].length
   if (length < MIN_TEXT_CHARS) return 'empty'
   return length > MAX_TEXT_CHARS ? 'too_long' : { channel: 'extension', text: value }
+}
+
+/**
+ * Turns a post into a CheckRequest: its text with the web form's length rules (never read as
+ * a link) and its address as `page_url` when that is an http(s) address.
+ *
+ * @param text - The post's visible text.
+ * @param pageUrl - The post's own address (status link) or the page's.
+ * @returns The request to send, or why the post cannot be sent.
+ * @feature US-WTY-01, US-WTY-04, F-02
+ */
+export function toPostRequest(text: string, pageUrl: string): CheckRequest | InputError {
+  const request = toTextRequest(text.trim())
+  const url = toUrl(pageUrl)
+  return typeof request === 'string' || url === null ? request : { ...request, page_url: url }
 }
 
 class Problem extends Error {
@@ -87,10 +107,20 @@ type Fields = Record<string, unknown>
 const isObject = (value: unknown): value is Fields => typeof value === 'object' && value !== null
 const isText = (value: unknown): boolean => typeof value === 'string'
 
+function isCitation(citation: unknown): boolean {
+  if (!(isObject(citation) && isObject(citation['source']))) return false
+  const { title, publisher, url, published_at: date } = citation['source']
+  const sourceOk =
+    isText(title) && isText(publisher) && isText(url) && (date == null || isText(date))
+  return sourceOk && isText(citation['fragment'])
+}
+
 function isClaim(claim: unknown): boolean {
   if (!isObject(claim)) return false
+  const { citations } = claim
   const knownVerdict = KNOWN_VERDICTS.some((v) => v === claim['verdict'])
-  return knownVerdict && isText(claim['claim']) && isText(claim['explanation'])
+  const citationsOk = citations == null || (Array.isArray(citations) && citations.every(isCitation))
+  return knownVerdict && isText(claim['claim']) && isText(claim['explanation']) && citationsOk
 }
 
 function isResult(result: unknown): boolean {
@@ -120,9 +150,9 @@ async function fetchStatus(url: string, init?: RequestInit): Promise<AnalysisSta
   return body
 }
 
-async function waitForResult(url: string): Promise<CheckResult> {
+async function waitForResult(url: string, headers: HeadersInit): Promise<CheckResult> {
   for (let attempt = 0; attempt < POLL_MAX_ATTEMPTS; attempt += 1) {
-    const { result } = await fetchStatus(url)
+    const { result } = await fetchStatus(url, { headers })
     if (result) return result
     await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
   }
@@ -134,19 +164,25 @@ async function waitForResult(url: string): Promise<CheckResult> {
  * result arrives. Nothing is sent until the user clicks „Sprawdź”.
  *
  * @param apiUrl - Base address of the verification core.
- * @param request - A request from {@link toCheckRequest}.
+ * @param request - A request from {@link toCheckRequest} or {@link toPostRequest}.
+ * @param sessionId - The extension's session id, sent in the X-Meritum-Session header.
  * @returns The result, or the problem to show instead; never throws.
- * @feature US-WTY-02, US-WTY-04, F-02
+ * @feature US-WTY-02, US-WTY-04, US-BEZ-05, F-02
  */
-export async function sendCheck(apiUrl: string, request: CheckRequest): Promise<CheckOutcome> {
+export async function sendCheck(
+  apiUrl: string,
+  request: CheckRequest,
+  sessionId: string,
+): Promise<CheckOutcome> {
+  const headers = { [SESSION_HEADER]: sessionId }
   try {
     const started = await fetchStatus(`${apiUrl}${CHECKS_PATH}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify(request),
     })
     const statusUrl = `${apiUrl}${CHECKS_PATH}/${encodeURIComponent(started.check_id)}`
-    return { result: started.result ?? (await waitForResult(statusUrl)) }
+    return { result: started.result ?? (await waitForResult(statusUrl, headers)) }
   } catch (error) {
     if (error instanceof Problem) return { problem: error.key }
     // fetch rejects with a TypeError only when the network is unreachable.

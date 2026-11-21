@@ -81,7 +81,7 @@ export function App({ storage }: { storage: SessionStore }) {
         </span>
       </header>
       <main>
-        <CheckForm apiUrl={apiUrl} />
+        <CheckForm apiUrl={apiUrl} storage={storage} />
         <DeleteChecks apiUrl={apiUrl} storage={storage} />
       </main>
     </>

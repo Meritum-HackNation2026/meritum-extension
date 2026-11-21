@@ -143,3 +143,58 @@ export const KNOWN_VERDICTS = [
   'insufficient_evidence',
   'not_verifiable',
 ] as const satisfies readonly Verdict[]
+
+/**
+ * chrome.runtime message type the content script sends to the background after a trusted
+ * click on „Sprawdź” under a post.
+ *
+ * @feature US-WTY-01, US-WTY-04, F-02
+ */
+export const CHECK_POST_MESSAGE = 'meritum:check-post'
+
+/**
+ * Relative luminance under which the host page counts as dark and the widget gets `.dark`
+ * (design-system/extension/README.md, Theme detection).
+ *
+ * @feature US-WTY-05, ADR-09
+ */
+export const DARK_LUMINANCE = 0.4
+
+/**
+ * Background alpha below which a page element is treated as transparent for the theme.
+ *
+ * @feature US-WTY-05, ADR-09
+ */
+export const OPAQUE_ALPHA = 0.5
+
+/**
+ * Events that never leave the widget's shadow roots: X opens the post on click and has
+ * one-key shortcuts.
+ *
+ * @feature US-WTY-01, ADR-09
+ */
+export const ISOLATED_EVENTS = ['click', 'keydown', 'keyup', 'keypress'] as const
+
+/**
+ * Pause after a page mutation before the content script rescans the feed, so a burst of
+ * host re-renders costs one scan.
+ *
+ * @feature US-WTY-01, ADR-10
+ */
+export const SCAN_DELAY_MS = 150
+
+/**
+ * Attributes on <html> and <body> where the platforms switch their theme (X: style, Facebook,
+ * Instagram and Reddit: class, TikTok: data-theme).
+ *
+ * @feature US-WTY-05, ADR-09
+ */
+export const THEME_ATTRIBUTES = ['class', 'style', 'data-theme'] as const
+
+/**
+ * Request header with the random session id; the API refuses a check without it
+ * (meritum-backend `SESSION_HEADER`).
+ *
+ * @feature US-BEZ-05, US-BEZ-06
+ */
+export const SESSION_HEADER = 'X-Meritum-Session'

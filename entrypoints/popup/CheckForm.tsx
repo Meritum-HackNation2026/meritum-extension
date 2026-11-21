@@ -1,6 +1,7 @@
 import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react'
 import copy from '../../design-system/copy/pl.json' with { type: 'json' }
 import { type CheckOutcome, sendCheck, toCheckRequest } from '../../utils/check.ts'
+import { getOrCreateSessionId, type SessionStore } from '../../utils/session.ts'
 import { CheckAnswer } from './CheckAnswer.tsx'
 
 /**
@@ -8,10 +9,11 @@ import { CheckAnswer } from './CheckAnswer.tsx'
  * contact (AI Act art. 50) and the note that nothing is sent before „Sprawdź”.
  *
  * @param props.apiUrl - Base address of the verification core.
+ * @param props.storage - chrome.storage.local (or a fake) holding the session id sent with the check.
  * @returns The paste box and the answer under it.
  * @feature US-WTY-02, US-WTY-04, US-BEZ-07, F-02, F-21
  */
-export function CheckForm({ apiUrl }: { apiUrl: string }) {
+export function CheckForm({ apiUrl, storage }: { apiUrl: string; storage: SessionStore }) {
   const [value, setValue] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -33,10 +35,14 @@ export function CheckForm({ apiUrl }: { apiUrl: string }) {
       }
       setBusy(true)
       setOutcome(null)
-      setOutcome(await sendCheck(apiUrl, request))
+      const outcome = await getOrCreateSessionId(storage).then(
+        (id) => sendCheck(apiUrl, request, id),
+        (): CheckOutcome => ({ problem: 'failed' }),
+      )
+      setOutcome(outcome)
       setBusy(false)
     },
-    [apiUrl, value],
+    [apiUrl, storage, value],
   )
 
   return (
