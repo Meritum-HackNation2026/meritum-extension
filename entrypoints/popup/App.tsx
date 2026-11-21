@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import copy from '../../design-system/copy/pl.json' with { type: 'json' }
 import type { SessionStore } from '../../utils/session.ts'
+import { CheckForm } from './CheckForm.tsx'
 import { DeleteChecks } from './DeleteChecks.tsx'
 
 // Build-time API of the verification core (prd unless WXT_API_URL says otherwise).
@@ -38,11 +39,12 @@ function badge(health: Health | null, failed: boolean): { state: string; text: s
 }
 
 /**
- * The popup: the Meritum header with the API status and, later, the paste-to-check box.
+ * The popup: the Meritum header with the API status, the paste-to-check box and the delete
+ * button; Esc closes it.
  *
  * @param props.storage - chrome.storage.local (or a fake in tests) holding the session_id.
  * @returns The popup content.
- * @feature US-WTY-02, US-BEZ-05, US-BEZ-06
+ * @feature US-WTY-02, US-WTY-04, US-BEZ-05, US-BEZ-06, US-BEZ-07, F-02, F-21
  */
 export function App({ storage }: { storage: SessionStore }) {
   const [health, setHealth] = useState<Health | null>(null)
@@ -53,6 +55,13 @@ export function App({ storage }: { storage: SessionStore }) {
       .then((r) => r.json() as Promise<Health>)
       .then(setHealth)
       .catch(() => setFailed(true))
+  }, [])
+
+  useEffect(() => {
+    // Esc closes the popup, unless a dialog inside it handled the key (meritum-ui rule 7).
+    const close = (e: KeyboardEvent) => e.key === 'Escape' && !e.defaultPrevented && window.close()
+    document.addEventListener('keydown', close)
+    return () => document.removeEventListener('keydown', close)
   }, [])
 
   const status = badge(health, failed)
@@ -68,12 +77,7 @@ export function App({ storage }: { storage: SessionStore }) {
         </span>
       </header>
       <main>
-        <section className="block quiet">
-          <p>
-            Obywatelski radar dezinformacji. Przycisk „Sprawdź” pod postem i okienko do wklejenia
-            tekstu są w budowie.
-          </p>
-        </section>
+        <CheckForm apiUrl={apiUrl} />
         <DeleteChecks apiUrl={apiUrl} storage={storage} />
       </main>
     </>

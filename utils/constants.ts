@@ -54,3 +54,52 @@ export const SESSION_ID_KEY = 'session_id'
  * @feature US-BEZ-05, US-BEZ-06
  */
 export const DELETE_CHECKS_PATH = '/api/v1/sessions/{session_id}/checks'
+
+/**
+ * Shortest text the web form and the API accept (errors.empty in copy/pl.json).
+ *
+ * @feature US-WTY-02, F-02
+ */
+export const MIN_TEXT_CHARS = 3
+
+/**
+ * Longest text the web form and the API accept (CheckRequest, errors.too_long).
+ *
+ * @feature US-WTY-02, F-02
+ */
+export const MAX_TEXT_CHARS = 4000
+
+/**
+ * API path that accepts a CheckRequest and answers 202 with the check id (backend#16).
+ *
+ * @feature US-WTY-02, F-02
+ */
+export const CHECKS_PATH = '/api/v1/checks'
+
+/**
+ * Pause between two AnalysisStatus polls of a running check.
+ *
+ * @feature US-WTY-02, F-02
+ */
+export const POLL_INTERVAL_MS = 1000
+
+/**
+ * Polls before the popup gives up on a check and reports a technical failure (about 3 min).
+ *
+ * @feature US-WTY-02, F-02
+ */
+export const POLL_MAX_ATTEMPTS = 180
+
+/**
+ * HTTP status of the API's rate limit (errors.rate_limited).
+ *
+ * @feature US-WTY-02, F-02
+ */
+export const HTTP_TOO_MANY_REQUESTS = 429
+
+/**
+ * HTTP status of an overloaded API (errors.busy).
+ *
+ * @feature US-WTY-02, F-02
+ */
+export const HTTP_SERVICE_UNAVAILABLE = 503
