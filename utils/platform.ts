@@ -1,21 +1,25 @@
-// Which supported platform a page belongs to: the real sites and the demo mocks
-// (meritum-<platform>[-dev].gburek.app, design-system/demo/platforms/SELECTORS.md).
-export const PLATFORMS = ['x', 'facebook', 'instagram', 'reddit', 'tiktok'] as const
+import { MOCK_HOST, type PLATFORMS, REAL_HOSTS, SITE_PREFIX } from './constants.ts'
+
+/**
+ * One of the supported platforms.
+ *
+ * @feature US-WTY-01, ADR-10
+ */
 export type Platform = (typeof PLATFORMS)[number]
 
-const REAL: Record<string, Platform> = {
-  'x.com': 'x',
-  'twitter.com': 'x',
-  'facebook.com': 'facebook',
-  'instagram.com': 'instagram',
-  'reddit.com': 'reddit',
-  'tiktok.com': 'tiktok',
-}
-const MOCK = /^meritum-(x|facebook|instagram|reddit|tiktok)(?:-dev)?\.gburek\.app$/
+const realHosts: Record<string, Platform> = REAL_HOSTS
 
+/**
+ * Which supported platform a page belongs to.
+ *
+ * @param hostname - The page's `location.hostname`.
+ * @returns The platform, or null for any other site.
+ * @feature US-WTY-01, ADR-10
+ */
 export function platformOf(hostname: string): Platform | null {
-  const mock = MOCK.exec(hostname)
-  if (mock) return mock[1] as Platform
-  const site = hostname.replace(/^(www|m|mobile|old|new)\./, '')
-  return REAL[site] ?? null
+  const mock = MOCK_HOST.exec(hostname)?.[1]
+  if (mock !== undefined) {
+    return mock as Platform
+  }
+  return realHosts[hostname.replace(SITE_PREFIX, '')] ?? null
 }

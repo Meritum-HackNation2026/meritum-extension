@@ -11,6 +11,8 @@
     "check": "biome check .",
     "typecheck": "tsc --noEmit",
     "test": "node --test",
+    "depcruise": "depcruise entrypoints utils --config .dependency-cruiser.cjs",
+    "knip": "knip",
     "postinstall": "wxt prepare"
   },
   "dependencies": {
@@ -25,6 +27,8 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@wxt-dev/module-react": "^1.1.5",
+    "dependency-cruiser": "^18.8.0",
+    "knip": "^6.47.0",
     "typescript": "^5.9.3",
     "web-ext": "^10.5.0",
     "wxt": "^0.21.3"
