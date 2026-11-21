@@ -10,7 +10,7 @@ import { act } from 'react'
 import type { CheckResult } from '../../design-system/contracts/meritum.ts'
 import copy from '../../design-system/copy/pl.json' with { type: 'json' }
 import { scanner } from '../../entrypoints/content/mount.tsx'
-import { CHECK_POST_MESSAGE } from '../../utils/constants.ts'
+import { CHECK_POST_MESSAGE, DARK_CLASS } from '../../utils/constants.ts'
 import type { Platform } from '../../utils/platform.ts'
 import type { PostCheckMessage, PostOutcome } from '../../utils/post-check.ts'
 import { postAdapter } from '../../utils/posts/index.ts'
@@ -56,13 +56,17 @@ function feed(count: number): void {
   ).join('')
 }
 
-function setup(send: (m: PostCheckMessage) => Promise<PostOutcome>, platform: Platform = 'x') {
+function setup(
+  send: (m: PostCheckMessage) => Promise<PostOutcome>,
+  platform: Platform = 'x',
+  dark = false,
+) {
   const sent: PostCheckMessage[] = []
   const scan = scanner({
     platform,
     adapter: postAdapter(platform, () => 'https://x.com/home'),
     sheet: new CSSStyleSheet(),
-    dark: () => false,
+    dark: () => dark,
     send: (m) => {
       sent.push(m)
       return send(m)
@@ -189,4 +193,13 @@ test('on Instagram the widget takes the Instagram skin and keeps the Meritum ver
   assert.ok(slot.querySelector('.m-badge.false')?.textContent === copy.verdict.false)
   assert.ok(slot.querySelector('.m-srcs .m-frag'))
   assert.ok(slot.querySelector('.m-top .m-mark'))
+})
+
+test('on a dark page every widget host gets the dark class of widget.css', () => {
+  feed(1)
+  setup(() => Promise.resolve({ result }), 'x', true)
+
+  for (const host of [...hosts('button'), ...hosts('slot')]) {
+    assert.equal(host.classList.contains(DARK_CLASS), true)
+  }
 })

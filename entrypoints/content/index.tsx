@@ -1,5 +1,11 @@
 import widgetCss from '../../design-system/extension/widget.css?inline'
-import { PREFERS_DARK, SCAN_DELAY_MS, THEME_ATTRIBUTES } from '../../utils/constants.ts'
+import {
+  DARK_CLASS,
+  PREFERS_DARK,
+  SCAN_DELAY_MS,
+  THEME_ATTRIBUTES,
+  WIDGET_TAG,
+} from '../../utils/constants.ts'
 import { platformOf } from '../../utils/platform.ts'
 import type { PostCheckMessage, PostOutcome } from '../../utils/post-check.ts'
 import { postAdapter } from '../../utils/posts/index.ts'
@@ -18,7 +24,7 @@ function pageIsDark(): boolean {
 function followTheme(): void {
   const apply = () => {
     const dark = pageIsDark()
-    for (const el of document.querySelectorAll('meritum-root')) el.classList.toggle('dark', dark)
+    for (const el of document.querySelectorAll(WIDGET_TAG)) el.classList.toggle(DARK_CLASS, dark)
   }
   const observer = new MutationObserver(() => requestAnimationFrame(apply))
   for (const el of [document.documentElement, document.body]) {

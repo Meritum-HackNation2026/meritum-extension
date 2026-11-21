@@ -206,3 +206,18 @@ export const SESSION_HEADER = 'X-Meritum-Session'
  * @feature US-WTY-05, ADR-09
  */
 export const PREFERS_DARK = '(prefers-color-scheme: dark)'
+
+/**
+ * Tag of every element the widget injects; `design-system/extension/widget.css` styles it
+ * through `:host`, and a valid custom element name lets `attachShadow` work without a registry.
+ *
+ * @feature US-WTY-01, ADR-09
+ */
+export const WIDGET_TAG = 'meritum-root'
+
+/**
+ * Class on a widget host that switches `widget.css` to its dark tokens (`:host(.dark)`).
+ *
+ * @feature US-WTY-05, ADR-09
+ */
+export const DARK_CLASS = 'dark'

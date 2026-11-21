@@ -1,5 +1,10 @@
 import { createRoot, type Root } from 'react-dom/client'
-import { CHECK_POST_MESSAGE, ISOLATED_EVENTS } from '../../utils/constants.ts'
+import {
+  CHECK_POST_MESSAGE,
+  DARK_CLASS,
+  ISOLATED_EVENTS,
+  WIDGET_TAG,
+} from '../../utils/constants.ts'
 import type { Platform } from '../../utils/platform.ts'
 import type { PostCheckMessage, PostOutcome } from '../../utils/post-check.ts'
 import type { PostAdapter } from '../../utils/posts/index.ts'
@@ -25,10 +30,10 @@ type Mounted = { url: string; button: Element; slot: Element; root: Root }
 // <meritum-root> is a valid custom element name, so attachShadow works without a registry
 // (design-system/extension/README.md, Shadow DOM recipe).
 function host(part: string, deps: ScannerDeps): { el: Element; inner: HTMLElement } {
-  const el = document.createElement('meritum-root')
+  const el = document.createElement(WIDGET_TAG)
   el.setAttribute('data-part', part)
   el.setAttribute('data-host', deps.platform)
-  el.classList.toggle('dark', deps.dark())
+  el.classList.toggle(DARK_CLASS, deps.dark())
   const shadow = el.attachShadow({ mode: 'open' })
   shadow.adoptedStyleSheets = [deps.sheet]
   for (const type of ISOLATED_EVENTS) shadow.addEventListener(type, (e) => e.stopPropagation())
@@ -84,7 +89,7 @@ export function scanner(deps: ScannerDeps): (root: ParentNode) => void {
 
 // A cloned post (the mocks' infinite scroll) carries our hosts without shadow roots.
 function removeDeadHosts(post: Element): void {
-  for (const dead of (post.parentElement ?? post).querySelectorAll('meritum-root')) {
+  for (const dead of (post.parentElement ?? post).querySelectorAll(WIDGET_TAG)) {
     if (!dead.shadowRoot) dead.remove()
   }
 }
