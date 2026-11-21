@@ -111,7 +111,7 @@ function Limitations({ result }: { result: CheckResult }) {
   if (texts.length === 0) return null
   return (
     <div>
-      <h4>{copy.result.limitations}</h4>
+      <h4 className="m-h">{copy.result.limitations}</h4>
       <ul>
         {texts.map((text) => (
           <li key={text}>{text}</li>

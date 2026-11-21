@@ -54,6 +54,18 @@ for (const [name, view] of Object.entries(views)) {
     assert.ok(!text.includes(result.message ?? ''), 'the message is not on screen')
   })
 
+  test(`${name}: codes newer than the synced copy fall back to the status hint`, () => {
+    const result = {
+      ...failure,
+      failure_code: 'new_failure',
+      limitation_codes: ['new_limitation'],
+    } as unknown as CheckResult
+    const container = view(result)
+
+    assert.ok(container.textContent?.includes(copy.status_hint.technical_failure))
+    assert.ok(!container.textContent?.includes(copy.result.limitations), 'no empty limitations')
+  })
+
   test(`${name}: limitation codes are listed with their copy under the limitations heading`, () => {
     const result: CheckResult = {
       check_id: 'c1',

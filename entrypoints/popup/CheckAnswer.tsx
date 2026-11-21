@@ -17,7 +17,7 @@ function Limitations({ result }: { result: CheckResult }) {
   const texts = limitationTexts(result)
   if (texts.length === 0) return null
   return (
-    <>
+    <section className="block">
       <h2>{copy.result.limitations}</h2>
       <ul className="rows">
         {texts.map((text) => (
@@ -26,7 +26,7 @@ function Limitations({ result }: { result: CheckResult }) {
           </li>
         ))}
       </ul>
-    </>
+    </section>
   )
 }
 
@@ -37,7 +37,6 @@ function Result({ result }: { result: CheckResult }) {
       <>
         <p className="summary">{copy.status[result.status]}</p>
         <p>{statusHint(result.status, result.failure_code)}</p>
-        <Limitations result={result} />
       </>
     )
   }
@@ -61,7 +60,6 @@ function Result({ result }: { result: CheckResult }) {
           ))}
         </ul>
       )}
-      <Limitations result={result} />
       <p className="muted small">{copy.result.ai_disclosure}</p>
     </>
   )
@@ -73,14 +71,17 @@ function Result({ result }: { result: CheckResult }) {
  * `message`. The live region is always there so screen readers announce the change.
  *
  * @param props.outcome - What sendCheck returned; null before the first check.
- * @returns The answer block of the popup.
+ * @returns The live region with the answer block and, when there are any, the limitations block.
  * @feature US-WTY-02, US-BEZ-07, F-02, F-21
  */
 export function CheckAnswer({ outcome }: { outcome: CheckOutcome | null }) {
   return (
-    <section className="block" aria-live="polite">
-      {outcome && 'result' in outcome && <Result result={outcome.result} />}
-      {outcome && 'problem' in outcome && <p>{problemText[outcome.problem]}</p>}
-    </section>
+    <div aria-live="polite">
+      <section className="block">
+        {outcome && 'result' in outcome && <Result result={outcome.result} />}
+        {outcome && 'problem' in outcome && <p>{problemText[outcome.problem]}</p>}
+      </section>
+      {outcome && 'result' in outcome && <Limitations result={outcome.result} />}
+    </div>
   )
 }
