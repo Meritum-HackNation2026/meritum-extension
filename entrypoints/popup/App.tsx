@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import copy from '../../design-system/copy/pl.json' with { type: 'json' }
 
 // Build-time API of the verification core (prd unless WXT_API_URL says otherwise).
 // `?.`: Vite fills import.meta.env at build time; under node --test it is undefined.
@@ -26,12 +27,12 @@ function Mark() {
 
 function badge(health: Health | null, failed: boolean): { state: string; text: string } {
   if (health?.status === 'ok') {
-    return { state: 'ok', text: `API: ${health.env}` }
+    return { state: 'ok', text: copy.extension.popup_api_ok.replace('{api}', apiUrl) }
   }
   const answeredBadly = failed || health !== null
   return answeredBadly
-    ? { state: 'bad', text: 'API nie odpowiada' }
-    : { state: 'pend', text: 'Łączę…' }
+    ? { state: 'bad', text: copy.extension.popup_api_down }
+    : { state: 'pend', text: copy.extension.popup_connecting }
 }
 
 /**
