@@ -6,7 +6,7 @@
  */
 export const settings = {
   /** Folders whose code must carry JSDoc with `@feature` and keep constants in constants.ts. */
-  sourceDirs: ['entrypoints/', 'utils/'],
+  sourceDirs: ['entrypoints/', 'utils/', 'tests/'],
   /** Never checked: generated files and copies owned by other repos (path prefixes). */
   excluded: [
     'entrypoints/popup/ui.css', // design-system copy

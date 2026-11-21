@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 
 // Build-time API of the verification core (prd unless WXT_API_URL says otherwise).
-const apiUrl = import.meta.env['WXT_API_URL'] ?? 'https://meritum.gburek.app'
+// `?.`: Vite fills import.meta.env at build time; under node --test it is undefined.
+const apiUrl = import.meta.env?.['WXT_API_URL'] ?? 'https://meritum.gburek.app'
 
 type Health = { status: string; env: string; database: string }
 
