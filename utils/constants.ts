@@ -103,3 +103,42 @@ export const HTTP_TOO_MANY_REQUESTS = 429
  * @feature US-WTY-02, F-02
  */
 export const HTTP_SERVICE_UNAVAILABLE = 503
+
+/**
+ * One token that starts like an address (any scheme or www.); such input is checked as a link.
+ *
+ * @feature US-WTY-02, F-02
+ */
+export const LINK_LIKE = /^(?:[a-z][a-z0-9+.-]*:\/\/|www\.)\S*$/i
+
+/**
+ * Link schemes the web form and the API accept (errors.invalid_url otherwise).
+ *
+ * @feature US-WTY-02, F-02
+ */
+export const ALLOWED_URL_PROTOCOLS: readonly string[] = ['http:', 'https:']
+
+/**
+ * CheckResult statuses the popup can show (contract `Status`).
+ *
+ * @feature US-WTY-02, F-02
+ */
+export const KNOWN_STATUSES: readonly string[] = [
+  'done',
+  'needs_clarification',
+  'out_of_scope',
+  'technical_failure',
+]
+
+/**
+ * Verdicts the popup can name (contract `Verdict`); anything else would be a badge without a word.
+ *
+ * @feature US-WTY-02, F-02
+ */
+export const KNOWN_VERDICTS: readonly string[] = [
+  'confirmed',
+  'false',
+  'misleading',
+  'insufficient_evidence',
+  'not_verifiable',
+]

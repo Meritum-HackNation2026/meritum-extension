@@ -26,21 +26,23 @@ function Result({ result }: { result: CheckResult }) {
   return (
     <>
       {claims.length === 0 && <p>{copy.result.no_result_hint}</p>}
-      <ul className="rows">
-        {claims.map((claim, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: claims never reorder and two may share a text
-          <li key={i}>
-            <span className="grow">
-              {claim.claim}
-              <span className="m">{claim.explanation}</span>
-            </span>
-            <span className={`badge ${tone[claim.verdict] ?? ''}`}>
-              {copy.verdict[claim.verdict]}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <p className="m">{copy.result.ai_disclosure}</p>
+      {claims.length > 0 && (
+        <ul className="rows">
+          {claims.map((claim, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: claims never reorder and two may share a text
+            <li key={i}>
+              <span className="grow">
+                {claim.claim}
+                <span className="m">{claim.explanation}</span>
+              </span>
+              <span className={`badge ${tone[claim.verdict] ?? ''}`}>
+                {copy.verdict[claim.verdict]}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="muted small">{copy.result.ai_disclosure}</p>
     </>
   )
 }
@@ -55,7 +57,7 @@ function Result({ result }: { result: CheckResult }) {
  */
 export function CheckAnswer({ outcome }: { outcome: CheckOutcome | null }) {
   return (
-    <section className="block answer" aria-live="polite">
+    <section className="block" aria-live="polite">
       {outcome && 'result' in outcome && <Result result={outcome.result} />}
       {outcome && 'problem' in outcome && <p>{problemText[outcome.problem]}</p>}
     </section>

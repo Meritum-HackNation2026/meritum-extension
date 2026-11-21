@@ -78,3 +78,15 @@ test('sendCheck reports the rate limit, a busy server, no network and other fail
   fetchMock.mock.mockImplementation(() => Promise.reject(new TypeError('offline')))
   assert.deepEqual(await sendCheck(api, request), { problem: 'offline' })
 })
+
+test('sendCheck treats a result with an unknown status or verdict as a failure', async (t) => {
+  const answer = (bad: object) => () =>
+    Promise.resolve(Response.json({ check_id: 'c1', steps: [], result: { ...result, ...bad } }))
+  const request = { channel: 'extension', text: 'abc' } as const
+  const fetchMock = t.mock.method(globalThis, 'fetch', answer({ status: 'maybe' }))
+  assert.deepEqual(await sendCheck(api, request), { problem: 'failed' })
+
+  const claim = { claim: 'X', verdict: 'half_true', explanation: 'Y' }
+  fetchMock.mock.mockImplementation(answer({ status: 'done', claims: [claim] }))
+  assert.deepEqual(await sendCheck(api, request), { problem: 'failed' })
+})

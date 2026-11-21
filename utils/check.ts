@@ -10,9 +10,13 @@ import type {
   CheckResult,
 } from '../design-system/contracts/meritum.ts'
 import {
+  ALLOWED_URL_PROTOCOLS,
   CHECKS_PATH,
   HTTP_SERVICE_UNAVAILABLE,
   HTTP_TOO_MANY_REQUESTS,
+  KNOWN_STATUSES,
+  KNOWN_VERDICTS,
+  LINK_LIKE,
   MAX_TEXT_CHARS,
   MIN_TEXT_CHARS,
   POLL_INTERVAL_MS,
@@ -41,13 +45,10 @@ export type CheckProblem = 'rate_limited' | 'busy' | 'offline' | 'failed'
  */
 export type CheckOutcome = { result: CheckResult } | { problem: CheckProblem }
 
-// One token that starts like an address (any scheme or www.) is checked as a link.
-const looksLikeLink = /^(?:[a-z][a-z0-9+.-]*:\/\/|www\.)\S*$/i
-
 function toUrl(value: string): string | null {
   try {
     const url = new URL(value)
-    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : null
+    return ALLOWED_URL_PROTOCOLS.includes(url.protocol) ? url.href : null
   } catch {
     return null
   }
@@ -63,7 +64,7 @@ function toUrl(value: string): string | null {
  */
 export function toCheckRequest(raw: string): CheckRequest | InputError {
   const value = raw.trim()
-  if (looksLikeLink.test(value)) {
+  if (LINK_LIKE.test(value)) {
     const url = toUrl(value)
     return url === null ? 'invalid_url' : { channel: 'extension', url }
   }
@@ -81,19 +82,32 @@ class Problem extends Error {
   }
 }
 
-async function call(url: string, init?: RequestInit): Promise<AnalysisStatus> {
+// Trust boundary: only shapes the popup can render with words from copy/pl.json pass.
+function isAnalysisStatus(body: unknown): body is AnalysisStatus {
+  const status = body as Partial<AnalysisStatus> | null
+  if (typeof status?.check_id !== 'string') return false
+  const result = status.result
+  if (result == null) return true
+  const claims: unknown[] = Array.isArray(result.claims) ? result.claims : []
+  const knownVerdicts = claims.every((c) =>
+    KNOWN_VERDICTS.includes((c as { verdict?: string } | null)?.verdict ?? ''),
+  )
+  return KNOWN_STATUSES.includes(result.status) && knownVerdicts
+}
+
+async function fetchStatus(url: string, init?: RequestInit): Promise<AnalysisStatus> {
   const response = await fetch(url, init)
   if (response.status === HTTP_TOO_MANY_REQUESTS) throw new Problem('rate_limited')
   if (response.status === HTTP_SERVICE_UNAVAILABLE) throw new Problem('busy')
   if (!response.ok) throw new Problem('failed')
-  const status = (await response.json()) as Partial<AnalysisStatus>
-  if (typeof status.check_id !== 'string') throw new Problem('failed')
-  return status as AnalysisStatus
+  const body: unknown = await response.json()
+  if (!isAnalysisStatus(body)) throw new Problem('failed')
+  return body
 }
 
 async function waitForResult(url: string): Promise<CheckResult> {
   for (let attempt = 0; attempt < POLL_MAX_ATTEMPTS; attempt += 1) {
-    const { result } = await call(url)
+    const { result } = await fetchStatus(url)
     if (result) return result
     await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
   }
@@ -111,7 +125,7 @@ async function waitForResult(url: string): Promise<CheckResult> {
  */
 export async function sendCheck(apiUrl: string, request: CheckRequest): Promise<CheckOutcome> {
   try {
-    const started = await call(`${apiUrl}${CHECKS_PATH}`, {
+    const started = await fetchStatus(`${apiUrl}${CHECKS_PATH}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request),
