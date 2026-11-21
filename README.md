@@ -2,7 +2,7 @@
 
 Wtyczka Chrome (Manifest V3) Meritum, drugi kanał w konkursie MSZ „Prawdowid”. Docelowo dodaje przycisk „Sprawdź” pod postami na X, Facebooku, Instagramie, Reddicie i TikToku oraz okienko do wklejenia tekstu w popupie. Oba wołają to samo API co formularz WWW ([meritum-backend](https://github.com/Meritum-HackNation2026/meritum-backend)), więc to samo pytanie daje ten sam wynik. Treść posta wysyłamy dopiero po kliknięciu.
 
-Stos: [WXT](https://wxt.dev), React, TypeScript, Biome, pnpm. Specyfikacja wyglądu, makiety popupu i stary kod referencyjny są w `design-system/extension/`, a kontrakt selektorów DOM w `design-system/demo/platforms/SELECTORS.md`.
+Stos: [WXT](https://wxt.dev), React, TypeScript, Biome, pnpm. Specyfikacja wyglądu, makiety popupu i stary kod referencyjny są w `design-system/extension/` (część pochodzi jeszcze z porzuconego zakresu o scamie), a kontrakt selektorów DOM w `design-system/demo/platforms/SELECTORS.md`.
 
 Stan bootstrapu:
 
