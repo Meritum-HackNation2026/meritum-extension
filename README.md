@@ -27,24 +27,15 @@ pnpm zip                   # .output/meritum-extension-<wersja>-chrome.zip
 
 Zasady architektury i to, co je sprawdza: [docs/architecture.md](docs/architecture.md).
 
+Ręcznie: `pnpm build`, potem `chrome://extensions` → tryb dewelopera → „Załaduj rozpakowane” → `.output/chrome-mv3`. Do testów są makiety na https://meritum-x.gburek.app (i pozostałe platformy).
+
 ## Testy komponentów
 
 `pnpm test` to `node --test` z dwoma importami: `tsx` przekształca JSX, a `tests/setup-dom.ts` rejestruje DOM z [happy-dom](https://github.com/capricorn86/happy-dom) (`@happy-dom/global-registrator`) i po każdym teście odmontowuje to, co wyrenderowano. Skrypt podaje wzorzec `{entrypoints,tests,utils}/**/*.test.{ts,tsx}`, bo samo `node --test` pomija pliki `.tsx`.
 
 Test komponentu leży w `tests/<domena>/<Komponent>.test.tsx`, renderuje przez `@testing-library/react` i szuka po roli i tekście, tak jak użytkownik. Sieć podmienia `t.mock.method(globalThis, 'fetch', …)`, które `node:test` cofa po teście. Wzór: `tests/popup/App.test.tsx`.
 
-```tsx
-test('nagłówek mówi, że API nie odpowiada', async (t) => {
-  t.mock.method(globalThis, 'fetch', () => Promise.reject(new TypeError('offline')))
-  render(<App />)
-  const header = screen.getByRole('banner')
-  assert.ok(await within(header).findByText('API nie odpowiada'))
-})
-```
-
 Teksty dla użytkownika pochodzą z `copy/pl.json` design systemu; gdy kopia trafi do repo (#10), test bierze tekst z niej zamiast z literału. Kod czytający `import.meta.env` używa `?.`, bo pod `node --test` Vite go nie wypełnia. Testy e2e w przeglądarce zostają ręczne.
-
-Ręcznie: `pnpm build`, potem `chrome://extensions` → tryb dewelopera → „Załaduj rozpakowane” → `.output/chrome-mv3`. Do testów są makiety na https://meritum-x.gburek.app (i pozostałe platformy).
 
 ## CI
 
