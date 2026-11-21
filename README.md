@@ -31,7 +31,7 @@ Ręcznie: `pnpm build`, potem `chrome://extensions` → tryb dewelopera → „Z
 
 ## Testy komponentów
 
-`pnpm test` to `node --test` z dwoma importami: `tsx` przekształca JSX, a `tests/setup-dom.ts` rejestruje DOM z [happy-dom](https://github.com/capricorn86/happy-dom) (`@happy-dom/global-registrator`) i po każdym teście odmontowuje to, co wyrenderowano. Skrypt podaje wzorzec `{entrypoints,tests,utils}/**/*.test.{ts,tsx}`, bo samo `node --test` pomija pliki `.tsx`.
+`pnpm test` to `node --test` z dwoma importami: `tsx` przekształca JSX, a `tests/setup-dom.ts` rejestruje DOM z [happy-dom](https://github.com/capricorn86/happy-dom) (`@happy-dom/global-registrator`) i po każdym teście odmontowuje to, co wyrenderowano. Skrypt podaje wzorzec `**/*.test.{ts,tsx}`, bo samo `node --test` pomija pliki `.tsx`; `node_modules` zostaje poza wzorcem.
 
 Test komponentu leży w `tests/<domena>/<Komponent>.test.tsx`, renderuje przez `@testing-library/react` i szuka po roli i tekście, tak jak użytkownik. Sieć podmienia `t.mock.method(globalThis, 'fetch', …)`, które `node:test` cofa po teście. Wzór: `tests/popup/App.test.tsx`.
 
