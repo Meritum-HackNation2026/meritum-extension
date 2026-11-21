@@ -19,7 +19,13 @@ const result: CheckResult = {
   corpus_version: 'v1',
   ai_disclosure: true,
   claims: [
-    { claim: 'Ziemia jest płaska.', verdict: 'false', explanation: 'Pomiary pokazują kulę.' },
+    {
+      claim: 'Ziemia jest płaska.',
+      claim_date: '2026-11-21',
+      claim_date_source: 'today',
+      verdict: 'false',
+      explanation: 'Pomiary pokazują kulę.',
+    },
   ],
 }
 

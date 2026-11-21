@@ -2,6 +2,7 @@ import type { CheckResult, Citation, ClaimResult } from '../../design-system/con
 import copy from '../../design-system/copy/pl.json' with { type: 'json' }
 import type { CheckProblem, InputError } from '../../utils/check.ts'
 import type { PostOutcome } from '../../utils/post-check.ts'
+import { limitationTexts, statusHint } from '../../utils/result-copy.ts'
 import { Mark } from './Mark.tsx'
 
 const problemText: Record<CheckProblem, string> = {
@@ -96,13 +97,28 @@ function Status({ title, text }: { title?: string; text: string }) {
 
 function Body({ result }: { result: CheckResult }) {
   if (result.status !== 'done') {
-    const text = result.message ?? copy.status_hint[result.status]
+    const text = statusHint(result.status, result.failure_code)
     return <Status title={copy.status[result.status]} text={text} />
   }
   const claims = result.claims ?? []
   if (claims.length === 0) return <Status text={copy.result.no_result_hint} />
   // biome-ignore lint/suspicious/noArrayIndexKey: claims never reorder and two may share a text
   return claims.map((claim, i) => <Claim key={i} claim={claim} />)
+}
+
+function Limitations({ result }: { result: CheckResult }) {
+  const texts = limitationTexts(result)
+  if (texts.length === 0) return null
+  return (
+    <div>
+      <h4>{copy.result.limitations}</h4>
+      <ul>
+        {texts.map((text) => (
+          <li key={text}>{text}</li>
+        ))}
+      </ul>
+    </div>
+  )
 }
 
 function Outcome({ outcome }: { outcome: PostOutcome }) {
@@ -117,7 +133,8 @@ function Outcome({ outcome }: { outcome: PostOutcome }) {
 /**
  * The result card under a post (DESIGN_SYSTEM.md 6.4, widget.css `.m-card`): the Meritum mark
  * and name, each claim's verdict word and colour, the sources with their quotes and the AI
- * notice; statuses and problems are neutral. The platform skin changes only the frame.
+ * notice with the limitations above it; statuses and problems are neutral, worded from the
+ * contract codes, never from `message`. The platform skin changes only the frame.
  *
  * @param props.outcome - What the background answered; null before the first check.
  * @returns The live region with the card, empty until there is an outcome.
@@ -134,6 +151,7 @@ export function ResultCard({ outcome }: { outcome: PostOutcome | null }) {
           </div>
           <Outcome outcome={outcome} />
           <footer className="m-foot">
+            {'result' in outcome && <Limitations result={outcome.result} />}
             <p>{copy.result.ai_disclosure}</p>
           </footer>
         </section>
