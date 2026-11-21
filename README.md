@@ -21,8 +21,11 @@ Adres API wybiera się przy buildzie: domyślnie https://meritum.gburek.app, a `
 pnpm install
 pnpm dev                   # Chrome z wtyczką i przeładowaniem na żywo
 pnpm check && pnpm typecheck && pnpm test
+pnpm depcruise && pnpm knip   # granice importów, martwy kod
 pnpm zip                   # .output/meritum-extension-<wersja>-chrome.zip
 ```
+
+Zasady architektury i to, co je sprawdza: [docs/architecture.md](docs/architecture.md).
 
 Ręcznie: `pnpm build`, potem `chrome://extensions` → tryb dewelopera → „Załaduj rozpakowane” → `.output/chrome-mv3`. Do testów są makiety na https://meritum-x.gburek.app (i pozostałe platformy, dev z sufiksem `-dev`).
 
