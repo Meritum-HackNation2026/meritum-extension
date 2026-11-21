@@ -26,10 +26,12 @@ const result: CheckResult = {
 /** Fake API: health ok, every check is accepted and done on the first status poll. */
 function fakeApi() {
   const sent: CheckRequest[] = []
+  const sessions: (string | null)[] = []
   const handler = (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input)
     if (url.endsWith('/api/v1/checks') && init?.method === 'POST') {
       sent.push(JSON.parse(String(init.body)) as CheckRequest)
+      sessions.push(new Headers(init.headers).get('X-Meritum-Session'))
       return Promise.resolve(Response.json({ check_id: 'c1', steps: [] }, { status: 202 }))
     }
     if (url.endsWith('/api/v1/checks/c1')) {
@@ -37,7 +39,7 @@ function fakeApi() {
     }
     return Promise.resolve(Response.json({ status: 'ok', env: 'prd', database: 'ok' }))
   }
-  return { sent, handler }
+  return { sent, sessions, handler }
 }
 
 function ask(value: string) {
@@ -67,6 +69,18 @@ test('a pasted link goes to POST /api/v1/checks on the extension channel and the
   assert.ok(screen.getByText('Ziemia jest płaska.'))
   assert.ok(screen.getByText(copy.result.ai_disclosure))
   assert.deepEqual(api.sent, [{ channel: 'extension', url: 'https://example.pl/artykul' }])
+})
+
+test('a check from the popup carries the stored session id in X-Meritum-Session', async (t) => {
+  const api = fakeApi()
+  t.mock.method(globalThis, 'fetch', api.handler)
+  const stored = { get: async () => ({ session_id: 'sesja-1234' }), set: async () => undefined }
+  render(<App storage={stored} />)
+
+  ask('Od stycznia nie zapłacisz gotówką')
+
+  assert.ok(await screen.findByText(copy.verdict.false))
+  assert.deepEqual(api.sessions, ['sesja-1234'])
 })
 
 test('text over 4000 characters shows the web form message and sends nothing', (t) => {

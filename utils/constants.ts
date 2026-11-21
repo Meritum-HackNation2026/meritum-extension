@@ -1,8 +1,9 @@
 /**
- * Hosts of the supported platforms: the real sites and the demo mocks
- * (meritum-<platform>[-dev].gburek.app, design-system/demo/platforms/SELECTORS.md).
+ * Constants shared by the extension: supported platform hosts and mocks
+ * (design-system/demo/platforms/SELECTORS.md), the API paths and limits, the session, and the
+ * widget's messaging, scanning and theme settings.
  *
- * @feature US-WTY-01, ADR-10
+ * @feature US-WTY-01, US-WTY-02, US-WTY-05, US-BEZ-05, ADR-10
  */
 import type { Status, Verdict } from '../design-system/contracts/meritum.ts'
 
@@ -143,3 +144,80 @@ export const KNOWN_VERDICTS = [
   'insufficient_evidence',
   'not_verifiable',
 ] as const satisfies readonly Verdict[]
+
+/**
+ * chrome.runtime message type the content script sends to the background after a trusted
+ * click on „Sprawdź” under a post.
+ *
+ * @feature US-WTY-01, US-WTY-04, F-02
+ */
+export const CHECK_POST_MESSAGE = 'meritum:check-post'
+
+/**
+ * Relative luminance under which the host page counts as dark and the widget gets `.dark`
+ * (design-system/extension/README.md, Theme detection).
+ *
+ * @feature US-WTY-05, ADR-09
+ */
+export const DARK_LUMINANCE = 0.4
+
+/**
+ * Background alpha below which a page element is treated as transparent for the theme.
+ *
+ * @feature US-WTY-05, ADR-09
+ */
+export const OPAQUE_ALPHA = 0.5
+
+/**
+ * Events that never leave the widget's shadow roots: X opens the post on click and has
+ * one-key shortcuts.
+ *
+ * @feature US-WTY-01, ADR-09
+ */
+export const ISOLATED_EVENTS = ['click', 'keydown', 'keyup', 'keypress'] as const
+
+/**
+ * Pause after a page mutation before the content script rescans the feed, so a burst of
+ * host re-renders costs one scan.
+ *
+ * @feature US-WTY-01, ADR-10
+ */
+export const SCAN_DELAY_MS = 150
+
+/**
+ * Attributes on <html> and <body> where the platforms switch their theme (X: style, Facebook,
+ * Instagram and Reddit: class, TikTok: data-theme).
+ *
+ * @feature US-WTY-05, ADR-09
+ */
+export const THEME_ATTRIBUTES = ['class', 'style', 'data-theme'] as const
+
+/**
+ * Request header with the random session id; the API refuses a check without it
+ * (meritum-backend `SESSION_HEADER`).
+ *
+ * @feature US-BEZ-05, US-BEZ-06
+ */
+export const SESSION_HEADER = 'X-Meritum-Session'
+
+/**
+ * Media query of the system dark mode, used when the page background says nothing.
+ *
+ * @feature US-WTY-05, ADR-09
+ */
+export const PREFERS_DARK = '(prefers-color-scheme: dark)'
+
+/**
+ * Tag of every element the widget injects; `design-system/extension/widget.css` styles it
+ * through `:host`, and a valid custom element name lets `attachShadow` work without a registry.
+ *
+ * @feature US-WTY-01, ADR-09
+ */
+export const WIDGET_TAG = 'meritum-root'
+
+/**
+ * Class on a widget host that switches `widget.css` to its dark tokens (`:host(.dark)`).
+ *
+ * @feature US-WTY-05, ADR-09
+ */
+export const DARK_CLASS = 'dark'

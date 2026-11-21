@@ -83,6 +83,13 @@
       }
     }
   },
+  "overrides": [
+    {
+      // A slice's index.ts is its public API (meritum-architecture rule 1), not a barrel to avoid.
+      "includes": ["utils/*/index.ts"],
+      "linter": { "rules": { "performance": { "noBarrelFile": "off" } } }
+    }
+  ],
   "assist": {
     "enabled": true,
     "actions": {
