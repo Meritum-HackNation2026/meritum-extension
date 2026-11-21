@@ -51,10 +51,14 @@ export function App({ storage }: { storage: SessionStore }) {
   const [failed, setFailed] = useState(false)
 
   useEffect(() => {
-    fetch(`${apiUrl}/api/v1/health`)
+    // A late answer after the popup closed (or a test unmounted) must not set state.
+    const controller = new AbortController()
+    const live = () => !controller.signal.aborted
+    fetch(`${apiUrl}/api/v1/health`, { signal: controller.signal })
       .then((r) => r.json() as Promise<Health>)
-      .then(setHealth)
-      .catch(() => setFailed(true))
+      .then((h) => live() && setHealth(h))
+      .catch(() => live() && setFailed(true))
+    return () => controller.abort()
   }, [])
 
   useEffect(() => {
