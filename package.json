@@ -10,7 +10,7 @@
     "zip": "wxt zip",
     "check": "biome check .",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --import ./tests/setup-dom.ts --test '{entrypoints,tests,utils}/**/*.test.{ts,tsx}'",
+    "test": "node --import tsx --import ./tests/setup-dom.ts --test '**/*.test.{ts,tsx}'",
     "depcruise": "depcruise entrypoints utils --config .dependency-cruiser.cjs",
     "knip": "knip",
     "postinstall": "wxt prepare"
