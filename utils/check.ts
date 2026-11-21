@@ -165,7 +165,7 @@ async function waitForResult(url: string, headers: HeadersInit): Promise<CheckRe
  *
  * @param apiUrl - Base address of the verification core.
  * @param request - A request from {@link toCheckRequest} or {@link toPostRequest}.
- * @param sessionId - The extension's session id, sent in the X-Meritum-Session header.
+ * @param sessionId - The extension's session id; same value in the body and X-Meritum-Session.
  * @returns The result, or the problem to show instead; never throws.
  * @feature US-WTY-02, US-WTY-04, US-BEZ-05, F-02
  */
@@ -179,7 +179,7 @@ export async function sendCheck(
     const started = await fetchStatus(`${apiUrl}${CHECKS_PATH}`, {
       method: 'POST',
       headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify(request),
+      body: JSON.stringify({ ...request, session_id: sessionId }),
     })
     const statusUrl = `${apiUrl}${CHECKS_PATH}/${encodeURIComponent(started.check_id)}`
     return { result: started.result ?? (await waitForResult(statusUrl, headers)) }

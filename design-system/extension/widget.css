@@ -122,13 +122,15 @@ fieldset{border:0;min-width:0}
 .m-btn[aria-pressed="true"]{background:var(--m-ink);color:var(--m-card);border-color:var(--m-ink)}
 
 /* analysis strip (DESIGN_SYSTEM.md 6.3): codes from AnalysisStatus.steps, several may spin at once */
-.m-proc{margin-top:12px;border:1px solid var(--m-host-line);border-radius:var(--m-r);background:var(--m-host-card);padding:12px 14px;font-family:var(--m-brand);color:var(--m-ink);animation:m-rise .35s var(--m-e) both}
+.m-proc{display:block;min-width:0;margin-top:12px;border:1px solid var(--m-host-line);border-radius:var(--m-r);background:var(--m-host-card);padding:12px 14px;font-family:var(--m-brand);color:var(--m-ink);animation:m-rise .35s var(--m-e) both}
 :host([data-host="instagram"]) .m-proc{border:1px solid var(--m-line);border-radius:8px}
 .m-proc-h{display:flex;align-items:center;gap:7px;font:600 12px var(--m-brand);color:var(--m-ink2)}
 .m-proc ol{list-style:none;margin-top:8px;display:grid;gap:6px}
 .m-proc li{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--m-ink2);transition:color .2s}
 .m-proc li.active,.m-proc li.done,.m-proc li.failed{color:var(--m-ink)}
-.m-proc li.skipped{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--m-ink2) 60%,transparent)}
+.m-proc li .m-step-label{min-width:0;flex:1}
+.m-proc li.skipped .m-step-label{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--m-ink2) 60%,transparent)}
+.m-proc li .m-step-status{flex:none;color:var(--m-ink2);font:600 12px var(--m-brand)}
 .m-proc li i{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--m-line);flex:none;display:grid;place-items:center;transition:border-color .2s,background .2s}
 .m-proc li.active i{border-color:var(--m-sea);border-top-color:transparent;animation:m-spin .8s linear infinite}
 .m-proc li.done i{border-color:var(--m-sea);background:var(--m-sea)}
