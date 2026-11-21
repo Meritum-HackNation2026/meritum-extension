@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
-const API = import.meta.env.WXT_API_URL ?? 'https://meritum.gburek.app'
+// Build-time API of the verification core (prd unless WXT_API_URL says otherwise).
+const apiUrl = import.meta.env['WXT_API_URL'] ?? 'https://meritum.gburek.app'
 
 type Health = { status: string; env: string; database: string }
 
@@ -22,18 +23,34 @@ function Mark() {
   )
 }
 
+function badge(health: Health | null, failed: boolean): { state: string; text: string } {
+  if (health?.status === 'ok') {
+    return { state: 'ok', text: `API: ${health.env}` }
+  }
+  const answeredBadly = failed || health !== null
+  return answeredBadly
+    ? { state: 'bad', text: 'API nie odpowiada' }
+    : { state: 'pend', text: 'Łączę…' }
+}
+
+/**
+ * The popup: the Meritum header with the API status and, later, the paste-to-check box.
+ *
+ * @returns The popup content.
+ * @feature US-WTY-02
+ */
 export function App() {
   const [health, setHealth] = useState<Health | null>(null)
   const [failed, setFailed] = useState(false)
 
   useEffect(() => {
-    fetch(`${API}/api/v1/health`)
+    fetch(`${apiUrl}/api/v1/health`)
       .then((r) => r.json() as Promise<Health>)
       .then(setHealth)
       .catch(() => setFailed(true))
   }, [])
 
-  const ok = health?.status === 'ok'
+  const status = badge(health, failed)
   return (
     <>
       <header className="top">
@@ -41,11 +58,8 @@ export function App() {
           <Mark />
           meritum
         </span>
-        <span
-          className={`badge ${ok ? 'ok' : failed || health ? 'bad' : 'pend'}`}
-          aria-live="polite"
-        >
-          {ok ? `API: ${health.env}` : failed || health ? 'API nie odpowiada' : 'Łączę…'}
+        <span className={`badge ${status.state}`} aria-live="polite">
+          {status.text}
         </span>
       </header>
       <main>

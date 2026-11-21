@@ -2,7 +2,7 @@ import { defineConfig } from 'wxt'
 
 // Build-time API of the verification core: prd by default, dev for develop builds
 // (WXT_API_URL=https://meritum-dev.gburek.app pnpm build).
-const api = process.env.WXT_API_URL ?? 'https://meritum.gburek.app'
+const api = process.env['WXT_API_URL'] ?? 'https://meritum.gburek.app'
 
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],

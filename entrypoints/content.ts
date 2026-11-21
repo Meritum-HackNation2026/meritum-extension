@@ -1,7 +1,12 @@
 import { platformOf } from '@/utils/platform'
 
-// Bootstrap: marks the page with its platform. The „Sprawdź” button under posts
-// (Shadow DOM, sends the post only after a click) builds on this.
+/**
+ * Content script on the supported platforms. Bootstrap: marks the page with its
+ * platform; the „Sprawdź” button under posts (Shadow DOM, sends the post only after
+ * a click) builds on this.
+ *
+ * @feature US-WTY-01, US-WTY-04, ADR-09
+ */
 export default defineContentScript({
   matches: [
     '*://x.com/*',
@@ -17,6 +22,6 @@ export default defineContentScript({
   runAt: 'document_idle',
   main() {
     const platform = platformOf(location.hostname)
-    if (platform) document.documentElement.dataset.meritumPlatform = platform
+    if (platform) document.documentElement.dataset['meritumPlatform'] = platform
   },
 })
