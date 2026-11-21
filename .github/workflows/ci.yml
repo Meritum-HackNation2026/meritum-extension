@@ -44,4 +44,5 @@ jobs:
           name: meritum-extension-${{ env.ENV_NAME }}
           path: .output/*-chrome.zip
           if-no-files-found: error
+          include-hidden-files: true # WXT writes to .output/, which upload-artifact skips by default
           retention-days: 30
