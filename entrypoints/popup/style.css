@@ -1,0 +1,31 @@
+/* Bootstrap only; the popup takes its tokens from design-system/extension/ui.css later. */
+:root {
+  color-scheme: light dark;
+  font:
+    14px / 1.5 system-ui,
+    sans-serif;
+  color: #14191e;
+  background: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #e7ebee;
+    background: #14191e;
+  }
+}
+main {
+  width: 320px;
+  padding: 16px;
+}
+h1 {
+  margin: 0;
+  font-size: 18px;
+}
+p {
+  margin: 4px 0 0;
+}
+.status {
+  margin-top: 12px;
+  font-size: 13px;
+  opacity: 0.8;
+}
