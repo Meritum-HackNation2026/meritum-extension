@@ -63,10 +63,29 @@ test('sendCheck posts the request with the session header and follows the status
 
   assert.deepEqual(outcome, { result })
   assert.deepEqual(calls, [
-    `POST ${api}/api/v1/checks {"channel":"extension","url":"https://example.pl/a"} ${session}`,
+    `POST ${api}/api/v1/checks {"channel":"extension","url":"https://example.pl/a","session_id":"${session}"} ${session}`,
     `GET ${api}/api/v1/checks/c1  ${session}`,
     `GET ${api}/api/v1/checks/c1  ${session}`,
   ])
+})
+
+test('sendCheck puts the same session_id in the request body and X-Meritum-Session header', async (t) => {
+  let body = ''
+  let header = ''
+  t.mock.method(globalThis, 'fetch', (_input: RequestInfo | URL, init?: RequestInit) => {
+    if (init?.method === 'POST') {
+      body = String(init.body)
+      header = new Headers(init.headers).get('X-Meritum-Session') ?? ''
+      return Promise.resolve(Response.json({ check_id: 'c1', result }, { status: 202 }))
+    }
+    return Promise.resolve(Response.json({ check_id: 'c1', result }))
+  })
+
+  await sendCheck(api, { channel: 'extension', text: 'abc' }, session)
+
+  const parsed = JSON.parse(body) as { session_id?: string }
+  assert.equal(parsed.session_id, session)
+  assert.equal(header, session)
 })
 
 test('sendCheck reports the rate limit, a busy server, no network and other failures', async (t) => {

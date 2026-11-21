@@ -61,6 +61,7 @@ test('the background sends the post with the stored session id and returns the r
     channel: 'extension',
     text: 'Treść posta',
     page_url: postUrl,
+    session_id: 'sesja-1234',
   })
 })
 

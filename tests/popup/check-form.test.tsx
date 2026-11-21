@@ -12,6 +12,7 @@ import copy from '../../design-system/copy/pl.json' with { type: 'json' }
 import { App } from '../../entrypoints/popup/App.tsx'
 
 const storage = { get: async () => ({}), set: async () => undefined }
+const uuidV4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
 
 const result: CheckResult = {
   check_id: 'c1',
@@ -74,7 +75,12 @@ test('a pasted link goes to POST /api/v1/checks on the extension channel and the
   assert.ok(await screen.findByText(copy.verdict.false))
   assert.ok(screen.getByText('Ziemia jest płaska.'))
   assert.ok(screen.getByText(copy.result.ai_disclosure))
-  assert.deepEqual(api.sent, [{ channel: 'extension', url: 'https://example.pl/artykul' }])
+  assert.equal(api.sent.length, 1)
+  const sent = api.sent[0]
+  assert.equal(sent?.channel, 'extension')
+  assert.equal(sent?.url, 'https://example.pl/artykul')
+  assert.match(String(sent?.session_id), uuidV4)
+  assert.deepEqual(api.sessions, [sent?.session_id])
 })
 
 test('a check from the popup carries the stored session id in X-Meritum-Session', async (t) => {
@@ -87,6 +93,9 @@ test('a check from the popup carries the stored session id in X-Meritum-Session'
 
   assert.ok(await screen.findByText(copy.verdict.false))
   assert.deepEqual(api.sessions, ['sesja-1234'])
+  assert.deepEqual(api.sent, [
+    { channel: 'extension', text: 'Od stycznia nie zapłacisz gotówką', session_id: 'sesja-1234' },
+  ])
 })
 
 test('text over 4000 characters shows the web form message and sends nothing', (t) => {
