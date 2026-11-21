@@ -37,7 +37,14 @@ export function DeleteChecks({ apiUrl, storage }: { apiUrl: string; storage: Ses
     // Rendered again on the next frame; focus goes back to the button that opened the question.
     requestAnimationFrame(() => openButton.current?.focus())
   }, [])
-  const onKeyDown = useCallback((e: KeyboardEvent) => e.key === 'Escape' && cancel(), [cancel])
+  const onKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      e.preventDefault() // closes the question only, not the whole popup
+      cancel()
+    },
+    [cancel],
+  )
   const confirm = useCallback(async () => {
     setStep('busy')
     setStep((await deleteMyChecks(apiUrl, storage)) ? 'done' : 'failed')

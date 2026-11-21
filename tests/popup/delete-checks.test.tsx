@@ -98,9 +98,10 @@ test('a server error shows a message and keeps the session_id', async (t) => {
   assert.equal(storage.data['session_id'], old)
 })
 
-test('Esc closes the confirmation without deleting', async (t) => {
+test('Esc closes the confirmation without deleting or closing the popup', async (t) => {
   const api = fakeApi(204)
   t.mock.method(globalThis, 'fetch', api.handler)
+  const close = t.mock.method(window, 'close', () => undefined)
 
   render(<App storage={fakeStorage({ session_id: 'a' })} />)
   fireEvent.click(await screen.findByRole('button', { name: extension.popup_delete }))
@@ -110,6 +111,7 @@ test('Esc closes the confirmation without deleting', async (t) => {
 
   assert.equal(screen.queryByText(extension.popup_delete_confirm), null)
   assert.deepEqual(api.deleted, [])
+  assert.equal(close.mock.callCount(), 0)
 })
 
 test('a storage error after deleting shows the failure message instead of hanging', async (t) => {

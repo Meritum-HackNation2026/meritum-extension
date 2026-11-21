@@ -37,3 +37,11 @@ main{flex:1;display:flex;flex-direction:column}
 footer{padding:10px 16px 12px;border-top:1px solid var(--line2)}
 .privacy{display:flex;gap:7px;font-size:12.5px;line-height:17px;color:var(--ink2)}
 .privacy svg{width:14px;height:14px;flex:none;margin-top:1px}
+
+.ask{display:grid;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--line2)}
+.ask h1{font:700 15px/20px var(--brand)}
+.field{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:14px/1.4 var(--brand);background:var(--card);color:var(--ink);resize:vertical;min-height:84px}
+.field::placeholder{color:var(--ink2)}
+.field:focus{outline:2px solid var(--sea);outline-offset:-1px;border-color:transparent}
+.err{font-size:12.5px;line-height:17px;color:var(--red-tx)}
+.rows .badge:not(.ok):not(.bad):not(.pend){background:var(--raised);color:var(--ink2)}
