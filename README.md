@@ -35,7 +35,18 @@ Ręcznie: `pnpm build`, potem `chrome://extensions` → tryb dewelopera → „Z
 
 Test komponentu leży w `tests/<domena>/<Komponent>.test.tsx`, renderuje przez `@testing-library/react` i szuka po roli i tekście, tak jak użytkownik. Sieć podmienia `t.mock.method(globalThis, 'fetch', …)`, które `node:test` cofa po teście. Wzór: `tests/popup/App.test.tsx`.
 
-Teksty dla użytkownika pochodzą z `copy/pl.json` design systemu; gdy kopia trafi do repo (#10), test bierze tekst z niej zamiast z literału. Kod czytający `import.meta.env` używa `?.`, bo pod `node --test` Vite go nie wypełnia. Testy e2e w przeglądarce zostają ręczne.
+Teksty dla użytkownika pochodzą z `design-system/copy/pl.json`. Napisów popupu („API nie odpowiada”, „API: …”, „Łączę…”) jeszcze tam nie ma, więc `tests/popup/App.test.tsx` szuka ich jako literałów; gdy design system je doda, test i `App.tsx` biorą je z kopii. Kod czytający `import.meta.env` używa `?.`, bo pod `node --test` Vite go nie wypełnia. Testy e2e w przeglądarce zostają ręczne.
+
+## Kopie z design systemu
+
+Katalog `design-system/` to kopia plików z [meritum-design-system](https://github.com/Meritum-HackNation2026/meritum-design-system) (ADR-33): `contracts/meritum.ts`, `copy/pl.json`, `tokens/meritum.css`, `extension/widget.css` i `extension/popup/`. Nie edytujemy ich tutaj; poprawki idą do design systemu, a kopię odświeża:
+
+```bash
+pnpm sync          # z main design systemu
+pnpm sync <ref>    # z innej gałęzi, tagu albo commitu
+```
+
+Skrypt `scripts/sync.sh` (wzorem `contracts/sync.sh` w design systemie) potrzebuje `gh` z dostępem do repo i zapisuje `design-system/SOURCE` (commit źródłowy) oraz `design-system/SHA256SUMS`. `pnpm test` (`tests/design-system-copy.test.ts`) sprawdza sumy bez sieci i przy ręcznej zmianie podaje nazwę pliku. Biome, knip i testy architektury pomijają ten katalog. `entrypoints/popup/ui.css` i `popup.css` to wcześniejsze kopie przerobione ręcznie (bez importu Google Fonts), więc zostają poza sync.
 
 ## CI
 

@@ -13,6 +13,7 @@
     "test": "node --import tsx --import ./tests/setup-dom.ts --test '**/*.test.{ts,tsx}'",
     "depcruise": "depcruise entrypoints utils --config .dependency-cruiser.cjs",
     "knip": "knip",
+    "sync": "scripts/sync.sh",
     "postinstall": "wxt prepare"
   },
   "dependencies": {

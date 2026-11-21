@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Popup: stany</title>
+<link rel="stylesheet" href="../ui.css">
+<style>
+body{padding:24px;background:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(4,360px);gap:24px 20px}
+figure{display:grid;gap:8px}
+figcaption{font:600 12px var(--brand);color:var(--ink2)}
+iframe{width:360px;height:580px;border:1px solid var(--line);border-radius:12px;background:#fff}
+iframe.dk{background:#0B0F12}
+</style>
+</head>
+<body>
+<div class="grid">
+ <figure><figcaption>Aktywne, jasny</figcaption><iframe src="popup.html?state=active&theme=light" title="Aktywne, jasny"></iframe></figure>
+ <figure><figcaption>Wstrzymane na stronie, jasny</figcaption><iframe src="popup.html?state=paused&theme=light" title="Wstrzymane, jasny"></iframe></figure>
+ <figure><figcaption>Strona nieobsługiwana, jasny</figcaption><iframe src="popup.html?state=unsupported&host=pl.wikipedia.org&theme=light" title="Nieobsługiwana, jasny"></iframe></figure>
+ <figure><figcaption>Brak połączenia, jasny</figcaption><iframe src="popup.html?state=offline&theme=light" title="Brak połączenia, jasny"></iframe></figure>
+ <figure><figcaption>Aktywne, ciemny</figcaption><iframe class="dk" src="popup.html?state=active&theme=dark" title="Aktywne, ciemny"></iframe></figure>
+ <figure><figcaption>Wstrzymane na stronie, ciemny</figcaption><iframe class="dk" src="popup.html?state=paused&theme=dark" title="Wstrzymane, ciemny"></iframe></figure>
+ <figure><figcaption>Strona nieobsługiwana, ciemny</figcaption><iframe class="dk" src="popup.html?state=unsupported&host=pl.wikipedia.org&theme=dark" title="Nieobsługiwana, ciemny"></iframe></figure>
+ <figure><figcaption>Brak połączenia, ciemny</figcaption><iframe class="dk" src="popup.html?state=offline&theme=dark" title="Brak połączenia, ciemny"></iframe></figure>
+</div>
+</body>
+</html>
