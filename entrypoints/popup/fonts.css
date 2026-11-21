@@ -1,0 +1,4 @@
+/* Fontsource names the variable family "Archivo Variable"; ui.css asks for "Archivo". */
+:root {
+  --brand: "Archivo Variable", "Archivo", system-ui, sans-serif;
+}
