@@ -10,7 +10,7 @@
     "zip": "wxt zip",
     "check": "biome check .",
     "typecheck": "tsc --noEmit",
-    "test": "node --test",
+    "test": "node --import tsx --import ./tests/setup-dom.ts --test '{entrypoints,tests,utils}/**/*.test.{ts,tsx}'",
     "depcruise": "depcruise entrypoints utils --config .dependency-cruiser.cjs",
     "knip": "knip",
     "postinstall": "wxt prepare"
@@ -23,12 +23,16 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.8",
+    "@happy-dom/global-registrator": "^21.0.4",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^26.6.6",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@wxt-dev/module-react": "^1.1.5",
     "dependency-cruiser": "^18.8.0",
     "knip": "^6.47.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "web-ext": "^10.5.0",
     "wxt": "^0.21.3"
