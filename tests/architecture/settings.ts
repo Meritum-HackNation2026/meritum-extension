@@ -11,6 +11,7 @@ export const settings = {
   excluded: [
     'entrypoints/popup/ui.css', // design-system copy
     'entrypoints/popup/popup.css', // design-system copy
+    'design-system/', // pnpm sync copy, checked by tests/design-system-copy.test.ts
   ],
   /** Line limit of one file. */
   maxLines: 250,

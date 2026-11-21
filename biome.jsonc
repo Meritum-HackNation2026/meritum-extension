@@ -13,7 +13,9 @@
       "!!.output",
       "!!.wxt",
       "!entrypoints/popup/ui.css",
-      "!entrypoints/popup/popup.css"
+      "!entrypoints/popup/popup.css",
+      // read-only copy from meritum-design-system (pnpm sync); its sums are checked in pnpm test
+      "!design-system"
     ]
   },
   "formatter": {

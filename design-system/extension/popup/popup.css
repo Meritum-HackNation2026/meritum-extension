@@ -1,0 +1,38 @@
+/* Toolbar popup, 360 x ~560 */
+html,body{width:360px}
+body{background:var(--card);display:flex;flex-direction:column;min-height:540px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 12px 16px;border-bottom:1px solid var(--line2)}
+.top-r{display:flex;align-items:center;gap:4px}
+.btn.sm{min-height:30px;padding:6px 12px;font-size:12.5px}
+main{flex:1;display:flex;flex-direction:column}
+
+.site{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line2)}
+.site .grow{flex:1;min-width:0}
+.dom{display:block;font-size:14px;font-weight:500;color:var(--ink)}
+.site-state{display:block;font-size:12.5px;line-height:17px;color:var(--ink2);margin-top:2px}
+
+.block{padding:12px 16px 0}
+.block h2{margin-bottom:4px}
+.block .rows>li{padding:7px 0}
+.block.quiet{padding-bottom:14px;border-bottom:1px solid var(--line2);display:grid;gap:12px;justify-items:start}
+.block.quiet p{font-size:13.5px;line-height:19px;color:var(--ink2)}
+.rows>li:last-child{border-bottom:0}
+
+.notice{display:flex;gap:10px;margin:12px 16px 0;padding:12px;border-radius:12px;background:var(--raised);font-size:13px;line-height:18px}
+.notice svg{width:16px;height:16px;flex:none;margin-top:1px;color:var(--ink2)}
+.notice b{display:block;font-weight:650}
+.notice span{display:block;color:var(--ink2);margin:2px 0 8px}
+.notice .btn{min-height:30px;padding:6px 12px}
+
+footer{padding:10px 16px 12px;border-top:1px solid var(--line2)}
+.privacy{display:flex;gap:7px;font-size:12.5px;line-height:17px;color:var(--ink2)}
+.privacy svg{width:14px;height:14px;flex:none;margin-top:1px}
+
+.ask{display:grid;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--line2)}
+.ask h1{font:700 15px/20px var(--brand)}
+.field{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:14px/1.4 var(--brand);background:var(--card);color:var(--ink);resize:vertical;min-height:84px}
+.field::placeholder{color:var(--ink2)}
+.field:focus{outline:2px solid var(--sea);outline-offset:-1px;border-color:transparent}
+.err{font-size:12.5px;line-height:17px;color:var(--red-tx)}
+meritum-root[data-result]{display:block;margin:0 16px}
+.rows .badge:not(.ok):not(.bad):not(.pend){background:var(--raised);color:var(--ink2)}

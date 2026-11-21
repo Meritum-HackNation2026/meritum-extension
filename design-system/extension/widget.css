@@ -1,0 +1,195 @@
+/*
+  Meritum widget: Shadow DOM build of demo/meritum.css.
+  Every injected element is a <meritum-root data-part="button|slot|overlay" data-host="x|facebook|instagram|reddit|tiktok">
+  with an open shadow root that adopts this sheet. Class names match demo/meritum.css, so markup from demo/x works unchanged.
+  Dark mode: class "dark" on the host element (set by the content script from the page background).
+  Tokens mirror tokens/meritum.css; the --m-* names are the short widget names used by demo/meritum.css.
+*/
+
+/* Fonts. Chrome ignores @font-face inside shadow roots, so content.js copies these four rules into the
+   document. Family names are prefixed so they never collide with a host font called "Archivo". */
+@font-face{font-family:"Meritum Archivo";font-style:normal;font-weight:400 800;font-stretch:75% 125%;font-display:swap;
+  src:url(https://fonts.gstatic.com/s/archivo/v25/k3kQo8UDI-1M0wlSfdfoLmvDIaK18A.woff2) format("woff2");
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Meritum Archivo";font-style:normal;font-weight:400 800;font-stretch:75% 125%;font-display:swap;
+  src:url(https://fonts.gstatic.com/s/archivo/v25/k3kQo8UDI-1M0wlSfdnoLmvDIaI.woff2) format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Meritum Azeret Mono";font-style:normal;font-weight:400 600;font-display:swap;
+  src:url(https://fonts.gstatic.com/s/azeretmono/v21/3XFuErsiyJsY9O_Gepph-HHvZfn23vRKV0U.woff2) format("woff2");
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Meritum Azeret Mono";font-style:normal;font-weight:400 600;font-display:swap;
+  src:url(https://fonts.gstatic.com/s/azeretmono/v21/3XFuErsiyJsY9O_Gepph-HHhZfn23vRK.woff2) format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+/* ---------- host reset + tokens (light) ---------- */
+:host{
+  all:initial;display:block;
+  --m-ink:#14191E; --m-ink2:#4C5862; --m-card:#FFFFFF; --m-sunk:#F6F7F5; --m-line:#D9DEDD; --m-line2:#E8ECEB;
+  --m-sea:#1D6A86; --m-sea-t:#E1EDF2; --m-ok:#13506A;
+  --m-red:#C8213A; --m-red-d:#9E1A2E; --m-red-t:#FBE6E9; --m-red-line:#F0C9D0;
+  --m-amber:#7A4E08; --m-amber-t:#F8EEDB;
+  --m-tip:#14191E; --m-tip-tx:#F3F5F4;
+  --m-brand:"Meritum Archivo","Archivo",system-ui,sans-serif; --m-mono:"Meritum Azeret Mono","Azeret Mono",ui-monospace,monospace;
+  --m-font:var(--m-brand); --m-r:12px; --m-btn-r:999px; --m-link:var(--m-sea);
+  --m-host-card:var(--m-card); --m-host-line:var(--m-line);
+  --m-e:cubic-bezier(.16,1,.3,1); --m-shadow:0 12px 32px rgba(20,25,30,.16),0 0 0 1px rgba(20,25,30,.08);
+  color:var(--m-ink);font:400 15px/1.4 var(--m-font);text-align:left;-webkit-font-smoothing:antialiased;
+}
+:host(.dark){
+  --m-ink:#E7ECEE; --m-ink2:#9AA6AE; --m-card:#0B0F12; --m-sunk:#151A1E; --m-line:#2F3336; --m-line2:#22282C;
+  --m-sea:#5DB3CF; --m-sea-t:#123441; --m-ok:#9FD8EC;
+  --m-red:#FF6B7D; --m-red-d:#FFB3BE; --m-red-t:#43161D; --m-red-line:#5A2029;
+  --m-amber:#F2C46D; --m-amber-t:#3A2C10;
+  --m-tip:#E7ECEE; --m-tip-tx:#0B0F12; --m-shadow:0 12px 32px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.1);
+  color-scheme:dark;
+}
+
+/* parts: how each injected element sits in the host page */
+:host([data-part="button"]){display:inline-flex;align-items:center;flex:none;color:inherit;font:inherit;vertical-align:middle}
+:host([data-part="overlay"]){position:fixed;top:0;left:0;width:0;height:0;z-index:2147483600;overflow:visible}
+
+/* ---------- platform skins: frame from the host, signal from Meritum ---------- */
+:host([data-host="x"]){--m-font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--m-r:16px;--m-btn-r:999px;--m-link:#1D6FB0;--m-host-line:#CFD9DE}
+:host([data-host="x"].dark){--m-link:#1D9BF0;--m-host-card:#000000;--m-host-line:#2F3336}
+:host([data-host="facebook"]){--m-font:"Segoe UI Historic","Segoe UI",Helvetica,Arial,sans-serif;--m-r:8px;--m-btn-r:6px;--m-link:#0064D1;--m-host-line:#CED0D4}
+:host([data-host="facebook"].dark){--m-link:#5AA7FF;--m-host-card:#252728;--m-host-line:#3E4042}
+:host([data-host="instagram"]){--m-font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--m-r:0px;--m-btn-r:8px;--m-link:#00376B;--m-host-card:transparent;--m-host-line:transparent}
+:host([data-host="instagram"].dark){--m-link:#E0F1FF}
+:host([data-host="reddit"]){--m-font:"Reddit Sans",-apple-system,BlinkMacSystemFont,sans-serif;--m-r:16px;--m-btn-r:999px;--m-link:#0045AC;--m-host-line:#DFE3E5}
+:host([data-host="reddit"].dark){--m-link:#648EFC;--m-host-card:#0E1113;--m-host-line:#2A3236}
+:host([data-host="tiktok"]){--m-font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;--m-r:8px;--m-btn-r:4px;--m-link:var(--m-ink)}
+:host([data-host="tiktok"].dark){--m-host-card:#121212;--m-host-line:rgba(255,255,255,.14)}
+
+/* per-platform placement. Host-page CSS (e.g. `*{margin:0;padding:0}`) beats :host rules, so spacing lives on
+   elements inside the shadow root, never on the host element. TikTok's floating slot is positioned inline by content.js. */
+:host([data-host="facebook"]) :is(.m-proc,.m-card){margin-left:12px;margin-right:12px;margin-bottom:12px}
+:host([data-host="instagram"]) :is(.m-proc,.m-card){margin-bottom:8px}
+:host([data-host="reddit"]) :is(.m-proc,.m-card){margin:4px 16px 12px}
+:host([data-host="reddit"][data-part="button"]){display:flex}
+:host([data-host="reddit"]) .m-check{margin:-6px 16px 8px}
+:host([data-host="tiktok"][data-part="button"]){display:flex;justify-content:center}
+:host([data-host="tiktok"]) .m-check{margin:4px 0 8px}
+:host([data-host="tiktok"]) :is(.m-proc,.m-card){margin-top:0}
+
+/* ---------- base ---------- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+button,input,textarea{font:inherit;color:inherit}
+a{color:inherit}
+fieldset{border:0;min-width:0}
+.m-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.m-num{font-family:var(--m-mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.m-mark{width:16px;height:16px;flex:none;color:var(--m-ink)}
+.m-mark .acc{fill:var(--m-sea);stroke:var(--m-sea)}
+.m-ic{width:16px;height:16px;flex:none}
+
+/* tooltip */
+.m-t{position:relative}
+.m-tip{position:absolute;z-index:60;bottom:calc(100% + 8px);left:50%;width:max-content;max-width:260px;transform:translate(-50%,4px);
+  background:var(--m-tip);color:var(--m-tip-tx);font:500 12.5px/1.4 var(--m-brand);letter-spacing:0;padding:8px 10px;border-radius:8px;
+  opacity:0;pointer-events:none;transition:opacity .16s var(--m-e),transform .16s var(--m-e);text-align:left;white-space:normal;text-decoration:none}
+.m-tip.r{left:auto;right:0;transform:translateY(4px)}.m-tip.l{left:0;transform:translateY(4px)}
+.m-t:hover>.m-tip,.m-t:focus-visible>.m-tip,.m-t:focus-within>.m-tip{opacity:1;transform:translate(-50%,0)}
+.m-t:hover>.m-tip.r,.m-t:focus-visible>.m-tip.r,.m-t:hover>.m-tip.l,.m-t:focus-visible>.m-tip.l{transform:none}
+
+/* "Sprawdź" button injected into the host action bar; at rest it takes the host icon colour */
+.m-check{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 10px 0 8px;border:0;border-radius:999px;background:none;
+  color:inherit;font:600 13px var(--m-brand);cursor:pointer;transition:background .15s,color .15s;white-space:nowrap}
+.m-check .m-mark{color:currentColor}
+.m-check:hover{background:var(--m-sea-t);color:var(--m-ok)}
+.m-check:focus-visible{outline:2px solid var(--m-sea);outline-offset:1px}
+.m-check.done{color:var(--m-ok)}
+.m-check[aria-busy="true"]{cursor:progress}
+.m-check[aria-busy="true"] .m-mark{animation:m-pulse 1.2s ease-in-out infinite}
+:host([data-host="x"]) .m-check{gap:4px;padding:0 8px 0 6px}
+:host([data-host="facebook"]) .m-check{border-radius:6px;height:32px;font-size:14px}
+:host([data-host="instagram"]) .m-check{padding:0 8px 0 6px;border-radius:8px}
+:host([data-host="instagram"]) .m-check .m-mark{width:22px!important;height:22px!important}
+:host([data-host="reddit"]) .m-check{height:32px;padding:0 12px 0 8px;background:var(--m-reddit-btn,#E5EBEE);font-size:12px}
+:host([data-host="reddit"].dark) .m-check{--m-reddit-btn:#2A3236}
+:host([data-host="reddit"]) .m-check:hover{background:var(--m-sea-t)}
+/* TikTok: same format as the other actions, a 48px round button with a caption under it */
+:host([data-host="tiktok"]) .m-check{flex-direction:column;gap:4px;height:auto;padding:0;background:none;font:700 12px/16px var(--m-font)}
+:host([data-host="tiktok"]) .m-check .m-mark{width:48px!important;height:48px!important;padding:13px;border-radius:50%;background:rgba(22,24,35,.06);transition:background .15s}
+:host([data-host="tiktok"].dark) .m-check .m-mark{background:rgba(255,255,255,.12)}
+:host([data-host="tiktok"]) .m-check:hover{background:none}
+:host([data-host="tiktok"]) .m-check:hover .m-mark{background:var(--m-sea-t)}
+
+/* buttons */
+.m-btn{font:650 13px var(--m-font);padding:7px 14px;border-radius:var(--m-btn-r);border:1px solid var(--m-line);background:var(--m-host-card);color:var(--m-ink);
+  cursor:pointer;transition:border-color .15s,background .15s,transform .1s}
+.m-btn:hover{border-color:var(--m-ink2)}.m-btn:active{transform:scale(.97)}
+.m-btn:focus-visible{outline:2px solid var(--m-sea);outline-offset:2px}
+.m-btn[aria-pressed="true"]{background:var(--m-ink);color:var(--m-card);border-color:var(--m-ink)}
+
+/* analysis strip (DESIGN_SYSTEM.md 6.3): codes from AnalysisStatus.steps, several may spin at once */
+.m-proc{margin-top:12px;border:1px solid var(--m-host-line);border-radius:var(--m-r);background:var(--m-host-card);padding:12px 14px;font-family:var(--m-brand);color:var(--m-ink);animation:m-rise .35s var(--m-e) both}
+:host([data-host="instagram"]) .m-proc{border:1px solid var(--m-line);border-radius:8px}
+.m-proc-h{display:flex;align-items:center;gap:7px;font:600 12px var(--m-brand);color:var(--m-ink2)}
+.m-proc ol{list-style:none;margin-top:8px;display:grid;gap:6px}
+.m-proc li{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--m-ink2);transition:color .2s}
+.m-proc li.active,.m-proc li.done,.m-proc li.failed{color:var(--m-ink)}
+.m-proc li.skipped{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--m-ink2) 60%,transparent)}
+.m-proc li i{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--m-line);flex:none;display:grid;place-items:center;transition:border-color .2s,background .2s}
+.m-proc li.active i{border-color:var(--m-sea);border-top-color:transparent;animation:m-spin .8s linear infinite}
+.m-proc li.done i{border-color:var(--m-sea);background:var(--m-sea)}
+.m-proc li.done i:after{content:"";width:6px;height:3px;border-left:1.6px solid var(--m-card);border-bottom:1.6px solid var(--m-card);transform:translateY(-1px) rotate(-45deg)}
+.m-proc li.failed i{border-color:var(--m-ink2)}
+.m-proc li.failed i:after{content:"×";font:700 11px/1 var(--m-brand);color:var(--m-ink2)}
+.m-proc .m-draft{margin-top:8px;padding-top:8px;border-top:1px solid var(--m-line2);font-size:12.5px;color:var(--m-ink2)}
+
+/* reveal wrapper (height 0 -> auto); after the transition the content may overflow so tooltips are not clipped */
+.m-reveal{display:grid;grid-template-rows:0fr;transition:grid-template-rows .55s var(--m-e)}
+.m-reveal.open{grid-template-rows:1fr}
+.m-reveal>div{overflow:hidden;min-height:0}
+.m-reveal.settled>div{overflow:visible}
+
+/* result card (DESIGN_SYSTEM.md 6.4): frame (background, border, radius, body font) from the host */
+.m-card{margin-top:12px;border:1px solid var(--m-host-line);border-radius:var(--m-r);background:var(--m-host-card);color:var(--m-ink);font-family:var(--m-font)}
+:host([data-host="instagram"]) .m-card{border-width:1px 0;border-color:var(--m-line)}
+:host([data-host="instagram"]) :is(.m-top,.m-claim,.m-foot,.m-status){padding-left:0;padding-right:0}
+.m-reveal.open .m-card{animation:m-rise .5s .08s var(--m-e) both}
+.m-top{display:flex;align-items:center;gap:6px;padding:11px 14px 0;font:600 12px/1 var(--m-brand);color:var(--m-ink2)}
+.m-claim{padding:10px 14px 12px;border-bottom:1px solid var(--m-line2)}
+.m-claim:last-of-type{border-bottom:0}
+.m-claim-h{display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 8px}
+.m-claim-h h3{flex:1;min-width:60%;font:700 15px/1.35 var(--m-font)}
+.m-badge{flex:none;font:650 12px/1 var(--m-brand);padding:5px 9px;border-radius:999px;white-space:nowrap}
+.m-badge.confirmed{color:var(--m-ok);background:var(--m-sea-t)}
+.m-badge.misleading{color:var(--m-amber);background:var(--m-amber-t)}
+.m-badge.false{color:var(--m-red-d);background:var(--m-red-t)}
+.m-badge.insufficient_evidence,.m-badge.not_verifiable{color:var(--m-ink2);background:var(--m-line2)}
+.m-sub{margin-top:2px;font-size:12.5px;line-height:1.4;color:var(--m-ink2)}
+.m-expl{margin-top:10px;font-size:15px;line-height:1.45}
+.m-h{margin-top:12px;font:600 12px/1.3 var(--m-brand);color:var(--m-ink2)}
+.m-srcs{list-style:none}
+.m-srcs li{display:grid;gap:5px;padding:8px 0;border-bottom:1px solid var(--m-line2)}
+.m-srcs li:last-child{border-bottom:0}
+.m-srcs a{font-weight:650;font-size:13.5px;color:var(--m-link);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--m-link) 35%,transparent);text-underline-offset:3px}
+.m-srcs a:hover{text-decoration-color:currentColor}
+.m-frag{background:var(--m-line2);border-radius:8px;padding:8px 11px;font-size:13.5px;line-height:1.45}
+.m-sides{display:grid;gap:0 16px}
+@container (min-width:460px){.m-sides{grid-template-columns:1fr 1fr}}
+.m-card{container-type:inline-size}
+.m-str{margin-top:10px;font-size:13.5px;font-weight:650;display:flex;align-items:center;gap:8px}
+.m-str .lv{display:flex;align-items:flex-end;gap:2px}
+.m-str .lv i{width:4px;border-radius:1px;background:var(--m-line)}
+.m-str .lv i.on{background:var(--m-ink)}
+.m-note{margin-top:10px;padding-top:8px;border-top:1px solid var(--m-line2);font-size:13.5px;line-height:1.4;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.m-note a{color:inherit;text-underline-offset:3px}
+.m-note .m-t{cursor:help;text-decoration:underline dotted;text-underline-offset:3px}
+.m-status{display:flex;gap:10px;align-items:flex-start;padding:10px 14px 4px}
+.m-status b{display:block;font:700 15px var(--m-font)}
+.m-status p{font-size:14px;line-height:1.45}
+.m-status .m-ic{margin-top:3px;color:var(--m-ink2)}
+.m-foot{display:grid;gap:6px;padding:10px 14px 13px;border-top:1px solid var(--m-line2);font-size:12.5px;line-height:1.4;color:var(--m-ink2)}
+.m-foot .esc{font-size:13.5px;color:var(--m-ink)}
+.m-foot ul{padding-left:16px}
+
+@keyframes m-rise{from{opacity:0;transform:translateY(8px)}}
+@keyframes m-pulse{50%{opacity:.45}}
+@keyframes m-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){
+  .m-proc,.m-card,.m-reveal.open .m-card{animation-duration:.01s!important;animation-delay:0s!important}
+  .m-reveal,.m-tip,.m-btn,.m-check,.m-proc li,.m-proc li i{transition:none!important}
+  .m-proc li.active i,.m-check[aria-busy="true"] .m-mark{animation:none}
+}

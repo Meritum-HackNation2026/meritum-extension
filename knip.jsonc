@@ -1,0 +1,5 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+  // design-system/ is a read-only copy from meritum-design-system (pnpm sync), not our code.
+  "ignore": ["design-system/**"]
+}
