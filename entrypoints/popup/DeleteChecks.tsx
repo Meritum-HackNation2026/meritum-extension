@@ -1,6 +1,6 @@
 import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react'
 import copy from '../../design-system/copy/pl.json' with { type: 'json' }
-import { deleteChecks, renewSessionId, type SessionStore, sessionId } from '../../utils/session.ts'
+import { deleteMyChecks, getOrCreateSessionId, type SessionStore } from '../../utils/session.ts'
 
 type Step = 'idle' | 'confirm' | 'busy' | 'done' | 'failed'
 
@@ -22,11 +22,13 @@ export function DeleteChecks({ apiUrl, storage }: { apiUrl: string; storage: Ses
 
   useEffect(() => {
     // Creates the id on first use, so every later check can carry it.
-    sessionId(storage).catch(() => undefined)
+    getOrCreateSessionId(storage).catch(() => undefined)
   }, [storage])
 
   useEffect(() => {
     if (step === 'confirm') confirmButton.current?.focus()
+    // The question is gone; keep keyboard focus on the delete button, not on <body>.
+    if (step === 'done' || step === 'failed') openButton.current?.focus()
   }, [step])
 
   const ask = useCallback(() => setStep('confirm'), [])
@@ -38,9 +40,7 @@ export function DeleteChecks({ apiUrl, storage }: { apiUrl: string; storage: Ses
   const onKeyDown = useCallback((e: KeyboardEvent) => e.key === 'Escape' && cancel(), [cancel])
   const confirm = useCallback(async () => {
     setStep('busy')
-    const ok = await deleteChecks(apiUrl, await sessionId(storage))
-    if (ok) await renewSessionId(storage)
-    setStep(ok ? 'done' : 'failed')
+    setStep((await deleteMyChecks(apiUrl, storage)) ? 'done' : 'failed')
   }, [apiUrl, storage])
 
   const asking = step === 'confirm' || step === 'busy'

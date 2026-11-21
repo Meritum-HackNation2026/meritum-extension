@@ -111,3 +111,15 @@ test('Esc closes the confirmation without deleting', async (t) => {
   assert.equal(screen.queryByText(extension.popup_delete_confirm), null)
   assert.deepEqual(api.deleted, [])
 })
+
+test('a storage error after deleting shows the failure message instead of hanging', async (t) => {
+  t.mock.method(globalThis, 'fetch', fakeApi(204).handler)
+  const storage = fakeStorage({ session_id: 'a' })
+  storage.set = () => Promise.reject(new Error('quota'))
+
+  render(<App storage={storage} />)
+  fireEvent.click(await screen.findByRole('button', { name: extension.popup_delete }))
+  fireEvent.click(screen.getByRole('button', { name: extension.popup_delete_yes }))
+
+  assert.ok(await screen.findByText(extension.popup_delete_failed))
+})
