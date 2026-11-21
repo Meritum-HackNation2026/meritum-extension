@@ -1,0 +1,87 @@
+/* Copy of design-system/extension/ui.css (Google Fonts import dropped: the fonts ship with the extension). */
+/* Meritum extension pages (popup, onboarding, options). Tokens = tokens/meritum.css; theme = system,
+   overridden by html[data-theme="light|dark"] from the "Wygląd" setting. */
+
+:root{
+  --bg:#F6F7F5; --card:#FFFFFF; --ink:#14191E; --ink2:#4C5862; --line:#D9DEDD; --line2:#E8ECEB; --raised:#E8ECEB;
+  --sea:#1D6A86; --sea-t:#E1EDF2; --sea-tx:#13506A;
+  --amber-t:#F8EEDB; --amber-tx:#7A4E08;
+  --red:#C8213A; --red-t:#FBE6E9; --red-tx:#9E1A2E;
+  --brand:"Archivo",system-ui,sans-serif; --mono:"Azeret Mono",ui-monospace,monospace;
+  --e:cubic-bezier(.16,1,.3,1);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B0F12; --card:#0B0F12; --ink:#E7ECEE; --ink2:#9AA6AE; --line:#2F3336; --line2:#22282C; --raised:#22282C;
+    --sea:#5DB3CF; --sea-t:#123441; --sea-tx:#9FD8EC; --amber-t:#3A2C10; --amber-tx:#F2C46D; --red:#FF6B7D; --red-t:#43161D; --red-tx:#FFB3BE;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B0F12; --card:#0B0F12; --ink:#E7ECEE; --ink2:#9AA6AE; --line:#2F3336; --line2:#22282C; --raised:#22282C;
+  --sea:#5DB3CF; --sea-t:#123441; --sea-tx:#9FD8EC; --amber-t:#3A2C10; --amber-tx:#F2C46D; --red:#FF6B7D; --red-t:#43161D; --red-tx:#FFB3BE;
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font:400 14px/20px var(--brand);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--sea);text-underline-offset:3px;text-decoration-color:color-mix(in srgb,currentColor 40%,transparent)}
+a:hover{text-decoration-color:currentColor}
+:focus-visible{outline:2px solid var(--sea);outline-offset:2px}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* mark + logotype */
+.mark{width:20px;height:20px;flex:none;color:var(--ink)}
+.mark .acc{stroke:var(--sea)}.mark .dot{fill:var(--sea)}
+.logo{display:flex;align-items:center;gap:8px;font:650 17px/1 var(--brand);font-stretch:112%;letter-spacing:-.02em;color:var(--ink);text-decoration:none}
+
+/* type */
+h1{font:700 22px/28px var(--brand);font-stretch:108%}
+h2{font:650 13px/18px var(--brand)}
+.muted{color:var(--ink2)}
+.small{font-size:13px;line-height:19px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  font:650 13px/1 var(--brand);cursor:pointer;text-decoration:none;transition:border-color .15s,background .15s,transform .1s}
+.btn:hover{border-color:var(--ink2)}.btn:active{transform:scale(.97)}
+.btn.p{background:var(--ink);border-color:var(--ink);color:var(--card)}
+.btn.wide{width:100%}
+.icon-btn{width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:8px;background:none;color:var(--ink2);cursor:pointer}
+.icon-btn:hover{background:var(--raised);color:var(--ink)}
+.icon-btn svg{width:18px;height:18px}
+
+/* badges: state is always a word, never colour alone */
+.badge{display:inline-flex;align-items:center;font:650 12px/1 var(--brand);padding:5px 9px;border-radius:999px;white-space:nowrap}
+.badge.ok{color:var(--sea-tx);background:var(--sea-t)}
+.badge.pend{color:var(--amber-tx);background:var(--amber-t)}
+.badge.bad{color:var(--red-tx);background:var(--red-t)}
+
+/* switch (input[role=switch]) */
+.switch{position:relative;display:inline-block;width:40px;height:24px;flex:none}
+.switch input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.switch span{position:absolute;inset:0;border-radius:999px;background:var(--raised);border:1px solid var(--line);transition:background .2s var(--e),border-color .2s}
+.switch span::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--ink2);transition:transform .2s var(--e),background .2s}
+.switch input:checked+span{background:var(--ink);border-color:var(--ink)}
+.switch input:checked+span::after{transform:translateX(16px);background:var(--card)}
+.switch input:focus-visible+span{outline:2px solid var(--sea);outline-offset:2px}
+
+/* list rows */
+.rows{list-style:none;border-top:1px solid var(--line2)}
+.rows>li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line2)}
+.rows .grow{flex:1;min-width:0}
+.rows .t{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rows .m{display:block;font-size:12.5px;line-height:17px;color:var(--ink2)}
+
+/* segmented choice (radio) */
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--raised);border-radius:10px;padding:3px}
+.seg label{position:relative;text-align:center;font-size:13.5px;font-weight:600;padding:7px 8px;border-radius:8px;cursor:pointer;color:var(--ink2);transition:background .15s,color .15s}
+.seg input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.seg label:has(input:checked){background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(20,25,30,.14)}
+.seg label:has(input:focus-visible){outline:2px solid var(--sea)}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
