@@ -48,7 +48,7 @@ export type CheckOutcome = { result: CheckResult } | { problem: CheckProblem }
 function toUrl(value: string): string | null {
   try {
     const url = new URL(value)
-    return ALLOWED_URL_PROTOCOLS.includes(url.protocol) ? url.href : null
+    return ALLOWED_URL_PROTOCOLS.some((p) => p === url.protocol) ? url.href : null
   } catch {
     return null
   }
@@ -82,17 +82,32 @@ class Problem extends Error {
   }
 }
 
-// Trust boundary: only shapes the popup can render with words from copy/pl.json pass.
+type Fields = Record<string, unknown>
+
+const isObject = (value: unknown): value is Fields => typeof value === 'object' && value !== null
+const isText = (value: unknown): boolean => typeof value === 'string'
+
+function isClaim(claim: unknown): boolean {
+  if (!isObject(claim)) return false
+  const knownVerdict = KNOWN_VERDICTS.some((v) => v === claim['verdict'])
+  return knownVerdict && isText(claim['claim']) && isText(claim['explanation'])
+}
+
+function isResult(result: unknown): boolean {
+  if (!isObject(result)) return false
+  const { status, message, claims } = result
+  const claimsOk = claims == null || (Array.isArray(claims) && claims.every(isClaim))
+  const messageOk = message == null || isText(message)
+  return KNOWN_STATUSES.some((s) => s === status) && messageOk && claimsOk
+}
+
+// Trust boundary: only shapes the popup can render, with words from copy/pl.json, pass.
 function isAnalysisStatus(body: unknown): body is AnalysisStatus {
-  const status = body as Partial<AnalysisStatus> | null
-  if (typeof status?.check_id !== 'string') return false
-  const result = status.result
-  if (result == null) return true
-  const claims: unknown[] = Array.isArray(result.claims) ? result.claims : []
-  const knownVerdicts = claims.every((c) =>
-    KNOWN_VERDICTS.includes((c as { verdict?: string } | null)?.verdict ?? ''),
+  return (
+    isObject(body) &&
+    isText(body['check_id']) &&
+    (body['result'] == null || isResult(body['result']))
   )
-  return KNOWN_STATUSES.includes(result.status) && knownVerdicts
 }
 
 async function fetchStatus(url: string, init?: RequestInit): Promise<AnalysisStatus> {

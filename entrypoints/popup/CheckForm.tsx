@@ -28,6 +28,7 @@ export function CheckForm({ apiUrl }: { apiUrl: string }) {
       const request = toCheckRequest(value)
       if (typeof request === 'string') {
         setError(copy.errors[request])
+        setOutcome(null) // an old verdict under rejected input would read as its answer
         return
       }
       setBusy(true)

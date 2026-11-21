@@ -80,6 +80,18 @@ test('text over 4000 characters shows the web form message and sends nothing', (
   assert.deepEqual(api.sent, [])
 })
 
+test('a rejected input clears the previous answer', async (t) => {
+  t.mock.method(globalThis, 'fetch', fakeApi().handler)
+  render(<App storage={storage} />)
+  ask('https://example.pl/artykul')
+  await screen.findByText(copy.verdict.false)
+
+  ask('ab')
+
+  assert.equal(screen.getByRole('alert').textContent, copy.errors.empty)
+  assert.ok(!screen.queryByText(copy.verdict.false), 'the old verdict is gone')
+})
+
 test('a check with no claims says that no result is not a denial', async (t) => {
   t.mock.method(globalThis, 'fetch', (_input: RequestInfo | URL, init?: RequestInit) => {
     const done = { ...result, claims: [] }

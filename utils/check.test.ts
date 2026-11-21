@@ -90,3 +90,18 @@ test('sendCheck treats a result with an unknown status or verdict as a failure',
   fetchMock.mock.mockImplementation(answer({ status: 'done', claims: [claim] }))
   assert.deepEqual(await sendCheck(api, request), { problem: 'failed' })
 })
+
+test('sendCheck treats a result the popup cannot render as a failure', async (t) => {
+  const answer = (bad: object) => () =>
+    Promise.resolve(Response.json({ check_id: 'c1', steps: [], result: { ...result, ...bad } }))
+  const request = { channel: 'extension', text: 'abc' } as const
+  const fetchMock = t.mock.method(globalThis, 'fetch', answer({ status: 'done', claims: 'abc' }))
+  assert.deepEqual(await sendCheck(api, request), { problem: 'failed' })
+
+  const claim = { claim: { x: 1 }, verdict: 'false', explanation: 'Y' }
+  fetchMock.mock.mockImplementation(answer({ status: 'done', claims: [claim] }))
+  assert.deepEqual(await sendCheck(api, request), { problem: 'failed' })
+
+  fetchMock.mock.mockImplementation(answer({ message: { x: 1 } }))
+  assert.deepEqual(await sendCheck(api, request), { problem: 'failed' })
+})

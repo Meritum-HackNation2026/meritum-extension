@@ -4,6 +4,7 @@
  *
  * @feature US-WTY-01, ADR-10
  */
+import type { Status, Verdict } from '../design-system/contracts/meritum.ts'
 
 /**
  * Platforms the extension recognises.
@@ -116,29 +117,29 @@ export const LINK_LIKE = /^(?:[a-z][a-z0-9+.-]*:\/\/|www\.)\S*$/i
  *
  * @feature US-WTY-02, F-02
  */
-export const ALLOWED_URL_PROTOCOLS: readonly string[] = ['http:', 'https:']
+export const ALLOWED_URL_PROTOCOLS = ['http:', 'https:'] as const
 
 /**
  * CheckResult statuses the popup can show (contract `Status`).
  *
  * @feature US-WTY-02, F-02
  */
-export const KNOWN_STATUSES: readonly string[] = [
+export const KNOWN_STATUSES = [
   'done',
   'needs_clarification',
   'out_of_scope',
   'technical_failure',
-]
+] as const satisfies readonly Status[]
 
 /**
  * Verdicts the popup can name (contract `Verdict`); anything else would be a badge without a word.
  *
  * @feature US-WTY-02, F-02
  */
-export const KNOWN_VERDICTS: readonly string[] = [
+export const KNOWN_VERDICTS = [
   'confirmed',
   'false',
   'misleading',
   'insufficient_evidence',
   'not_verifiable',
-]
+] as const satisfies readonly Verdict[]
