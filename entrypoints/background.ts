@@ -1,4 +1,4 @@
-import { answerPostCheck } from '../utils/post-check.ts'
+import { postCheckListener } from '../utils/post-check.ts'
 
 // Build-time API of the verification core, the same one the popup calls.
 const apiUrl = import.meta.env?.['WXT_API_URL'] ?? 'https://meritum.gburek.app'
@@ -10,10 +10,7 @@ const apiUrl = import.meta.env?.['WXT_API_URL'] ?? 'https://meritum.gburek.app'
  * @feature US-WTY-01, US-WTY-04, F-02
  */
 export default defineBackground(() => {
-  browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    const answer = answerPostCheck(apiUrl, browser.storage.local, message)
-    if (!answer) return false
-    answer.then(sendResponse)
-    return true // keeps the channel open for the asynchronous answer
-  })
+  browser.runtime.onMessage.addListener(
+    postCheckListener(apiUrl, browser.storage.local, browser.runtime.id),
+  )
 })

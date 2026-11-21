@@ -9,7 +9,7 @@ import { test } from 'node:test'
 import type { CheckResult } from '../design-system/contracts/meritum.ts'
 import { toPostRequest } from './check.ts'
 import { CHECK_POST_MESSAGE } from './constants.ts'
-import { answerPostCheck } from './post-check.ts'
+import { answerPostCheck, postCheckListener } from './post-check.ts'
 
 const api = 'https://api.test'
 const result: CheckResult = { check_id: 'c1', status: 'out_of_scope', corpus_version: 'v1' }
@@ -83,5 +83,30 @@ test('the background ignores messages that are not a post check', (t) => {
   for (const message of [null, 'x', { type: 'other' }, { type: CHECK_POST_MESSAGE, text: 1 }]) {
     assert.equal(answerPostCheck(api, storage, message), null)
   }
+  assert.equal(fetch.mock.callCount(), 0)
+})
+
+test('the runtime listener answers our own content script and keeps the channel open', async (t) => {
+  t.mock.method(globalThis, 'fetch', () =>
+    Promise.resolve(Response.json({ check_id: 'c1', result })),
+  )
+  const listen = postCheckListener(api, storage, 'meritum-id')
+  const message = { type: CHECK_POST_MESSAGE, text: 'Treść posta', pageUrl: postUrl }
+
+  const answered = new Promise((resolve) => {
+    assert.equal(listen(message, { id: 'meritum-id' }, resolve), true)
+  })
+
+  assert.deepEqual(await answered, { result })
+})
+
+test('the runtime listener ignores other extensions and foreign messages', (t) => {
+  const fetch = t.mock.method(globalThis, 'fetch', () => Promise.reject(new Error('no call')))
+  const listen = postCheckListener(api, storage, 'meritum-id')
+  const message = { type: CHECK_POST_MESSAGE, text: 'Treść posta', pageUrl: postUrl }
+  const reply = () => assert.fail('no answer')
+
+  assert.equal(listen(message, { id: 'inna-wtyczka' }, reply), false)
+  assert.equal(listen({ type: 'inne' }, { id: 'meritum-id' }, reply), false)
   assert.equal(fetch.mock.callCount(), 0)
 })

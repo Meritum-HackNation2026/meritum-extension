@@ -11,6 +11,7 @@ import type { CheckResult } from '../../design-system/contracts/meritum.ts'
 import copy from '../../design-system/copy/pl.json' with { type: 'json' }
 import { scanner } from '../../entrypoints/content/mount.tsx'
 import { CHECK_POST_MESSAGE } from '../../utils/constants.ts'
+import type { Platform } from '../../utils/platform.ts'
 import type { PostCheckMessage, PostOutcome } from '../../utils/post-check.ts'
 import { postAdapter } from '../../utils/posts/index.ts'
 
@@ -55,11 +56,11 @@ function feed(count: number): void {
   ).join('')
 }
 
-function setup(send: (m: PostCheckMessage) => Promise<PostOutcome>) {
+function setup(send: (m: PostCheckMessage) => Promise<PostOutcome>, platform: Platform = 'x') {
   const sent: PostCheckMessage[] = []
   const scan = scanner({
-    platform: 'x',
-    adapter: postAdapter('x', () => 'https://x.com/home'),
+    platform,
+    adapter: postAdapter(platform, () => 'https://x.com/home'),
     sheet: new CSSStyleSheet(),
     dark: () => false,
     send: (m) => {
@@ -86,16 +87,19 @@ async function click(button: HTMLButtonElement, trusted: boolean): Promise<void>
   })
 }
 
-test('a feed of 20 posts gets 20 „Sprawdź” buttons in Shadow DOM and sends nothing', () => {
+test('a feed of 20 posts gets 20 „Sprawdź” buttons in Shadow DOM and sends nothing', (t) => {
+  const fetch = t.mock.method(globalThis, 'fetch', () => assert.fail('no network request'))
   feed(20)
   const { scan, sent } = setup(() => assert.fail('nothing may be sent'))
   act(() => scan(document))
+  document.querySelector('article')?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
 
   assert.equal(hosts('button').length, 20)
   assert.equal(hosts('slot').length, 20)
   assert.equal(buttonOf(0).textContent, copy.extension.check)
   assert.equal(hosts('button')[0]?.getAttribute('data-host'), 'x')
   assert.equal(sent.length, 0)
+  assert.equal(fetch.mock.callCount(), 0)
 })
 
 test('a click that is not trusted sends nothing', async () => {
@@ -167,4 +171,22 @@ test('a rescan keeps the mounted widget and mounts a post re-rendered without it
   act(() => scan(document))
   assert.equal(hosts('button').length, 1)
   assert.notEqual(hosts('button')[0], first)
+})
+
+test('on Instagram the widget takes the Instagram skin and keeps the Meritum verdict and sources', async () => {
+  document.body.innerHTML = `<main><article><a href="/p/7/">x</a>
+    <section><div><div role="button"><svg aria-label="Udostępnij"></svg></div></div></section>
+    <div><a href="/ktos/">ktos</a><span dir="auto">Od stycznia nie zapłacisz gotówką</span></div>
+    </article></main>`
+  setup(() => Promise.resolve({ result }), 'instagram')
+
+  await click(buttonOf(0), true)
+
+  for (const host of [...hosts('button'), ...hosts('slot')]) {
+    assert.equal(host.getAttribute('data-host'), 'instagram')
+  }
+  const slot = shadow(hosts('slot')[0])
+  assert.ok(slot.querySelector('.m-badge.false')?.textContent === copy.verdict.false)
+  assert.ok(slot.querySelector('.m-srcs .m-frag'))
+  assert.ok(slot.querySelector('.m-top .m-mark'))
 })

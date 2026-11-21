@@ -1,8 +1,9 @@
 /**
- * Hosts of the supported platforms: the real sites and the demo mocks
- * (meritum-<platform>[-dev].gburek.app, design-system/demo/platforms/SELECTORS.md).
+ * Constants shared by the extension: supported platform hosts and mocks
+ * (design-system/demo/platforms/SELECTORS.md), the API paths and limits, the session, and the
+ * widget's messaging, scanning and theme settings.
  *
- * @feature US-WTY-01, ADR-10
+ * @feature US-WTY-01, US-WTY-02, US-WTY-05, US-BEZ-05, ADR-10
  */
 import type { Status, Verdict } from '../design-system/contracts/meritum.ts'
 
@@ -198,3 +199,10 @@ export const THEME_ATTRIBUTES = ['class', 'style', 'data-theme'] as const
  * @feature US-BEZ-05, US-BEZ-06
  */
 export const SESSION_HEADER = 'X-Meritum-Session'
+
+/**
+ * Media query of the system dark mode, used when the page background says nothing.
+ *
+ * @feature US-WTY-05, ADR-09
+ */
+export const PREFERS_DARK = '(prefers-color-scheme: dark)'

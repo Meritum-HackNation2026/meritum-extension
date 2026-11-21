@@ -55,3 +55,26 @@ export function answerPostCheck(
         (): PostOutcome => ({ problem: 'failed' }),
       )
 }
+
+/**
+ * The background's chrome.runtime.onMessage listener for post checks. Answers only messages
+ * from this extension (`sender.id`); the answer is asynchronous, so it returns true.
+ *
+ * @param apiUrl - Base address of the verification core.
+ * @param storage - chrome.storage.local holding the session id.
+ * @param extensionId - `chrome.runtime.id` of this extension.
+ * @returns The listener to pass to `chrome.runtime.onMessage.addListener`.
+ * @feature US-WTY-01, US-WTY-04, F-02
+ */
+export function postCheckListener(
+  apiUrl: string,
+  storage: SessionStore,
+  extensionId: string,
+): (message: unknown, sender: { id?: string }, reply: (outcome: PostOutcome) => void) => boolean {
+  return (message, sender, reply) => {
+    const answer = sender.id === extensionId ? answerPostCheck(apiUrl, storage, message) : null
+    if (!answer) return false
+    answer.then(reply)
+    return true
+  }
+}

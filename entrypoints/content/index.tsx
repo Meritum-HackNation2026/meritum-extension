@@ -1,5 +1,5 @@
 import widgetCss from '../../design-system/extension/widget.css?inline'
-import { SCAN_DELAY_MS, THEME_ATTRIBUTES } from '../../utils/constants.ts'
+import { PREFERS_DARK, SCAN_DELAY_MS, THEME_ATTRIBUTES } from '../../utils/constants.ts'
 import { platformOf } from '../../utils/platform.ts'
 import type { PostCheckMessage, PostOutcome } from '../../utils/post-check.ts'
 import { postAdapter } from '../../utils/posts/index.ts'
@@ -12,7 +12,7 @@ function pageIsDark(): boolean {
     const dark = isDarkBackground(getComputedStyle(el).backgroundColor)
     if (dark !== null) return dark
   }
-  return matchMedia('(prefers-color-scheme: dark)').matches
+  return matchMedia(PREFERS_DARK).matches
 }
 
 function followTheme(): void {
@@ -24,7 +24,7 @@ function followTheme(): void {
   for (const el of [document.documentElement, document.body]) {
     observer.observe(el, { attributes: true, attributeFilter: [...THEME_ATTRIBUTES] })
   }
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', apply)
+  matchMedia(PREFERS_DARK).addEventListener('change', apply)
 }
 
 /**

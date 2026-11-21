@@ -29,7 +29,8 @@ export const POST_SELECTORS = {
   },
   instagram: {
     post: 'main article',
-    text: 'span[dir="auto"]',
+    // The caption: the first span right after the author's link (comments come later).
+    text: 'a + span[dir="auto"]',
     link: 'a[href*="/p/"], a[href*="/reel/"]',
     share: 'svg[aria-label="Udostępnij"], svg[aria-label="Share"]',
     button: '[role="button"]',

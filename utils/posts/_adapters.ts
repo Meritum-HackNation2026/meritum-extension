@@ -58,7 +58,9 @@ const parts: Record<Platform, Parts> = {
       ...new Set(
         all(root, facebook.author)
           .map((author) => author.closest(facebook.unit))
-          .filter((unit): unit is Element => unit?.getAttribute('data-virtualized') === 'false'),
+          .filter(
+            (unit): unit is Element => !!unit && unit.getAttribute('data-virtualized') !== 'true',
+          ),
       ),
     ],
     text: (post) => textOf(post.querySelector(facebook.text)),
@@ -74,7 +76,7 @@ const parts: Record<Platform, Parts> = {
   },
   instagram: {
     posts: (root) => all(root, instagram.post),
-    text: (post) => all(post, instagram.text).map(textOf).join(' '),
+    text: (post) => textOf(post.querySelector(instagram.text)),
     href: (post) => post.querySelector(instagram.link)?.getAttribute('href'),
     mount(post, button, slot) {
       const share = post.querySelector(instagram.share)?.closest(instagram.button)
@@ -127,5 +129,12 @@ const parts: Record<Platform, Parts> = {
  */
 export function postAdapter(platform: Platform, pageUrl: () => string): PostAdapter {
   const { href, ...rest } = parts[platform]
-  return { ...rest, url: (post) => new URL(href(post) ?? '', pageUrl()).href }
+  const url = (post: Element) => {
+    try {
+      return new URL(href(post) ?? '', pageUrl()).href
+    } catch {
+      return pageUrl() // a malformed link must not stop the scan of the rest of the feed
+    }
+  }
+  return { ...rest, url }
 }

@@ -19,9 +19,11 @@ const markup: Record<Platform, string> = {
     <a href="https://www.facebook.com/ktos/posts/7">2 h</a>
     <div data-ad-preview="message">Tekst z Facebooka</div>
     <div class="bar"><div role="button"><span data-ad-rendering-role="share_button"></span></div></div></div>`,
-  instagram: `<main><article><a href="/p/7/">x</a>
+  instagram: `<main><article><div><a href="/ktos/">ktos</a><a href="/p/7/">x</a>
+    <div><span dir="auto">Gdynia Główna</span></div></div>
     <section><div class="left"><div role="button"><svg aria-label="Udostępnij"></svg></div></div></section>
-    <span dir="auto">Tekst z Instagrama</span></article></main>`,
+    <div><a href="/ktos/">ktos</a><span dir="auto">Tekst z Instagrama</span></div>
+    <ul><li><a href="/inny/">inny</a><span dir="auto">Komentarz</span></li></ul></article></main>`,
   reddit: `<article><shreddit-post id="t3_7" permalink="/r/polska/comments/7/" post-title="Tytuł">
     <div slot="text-body">Tekst z Reddita</div></shreddit-post></article>`,
   tiktok: `<article data-e2e="recommend-list-item-container"><section data-e2e="feed-video"></section>
@@ -99,5 +101,20 @@ test('a post without its own link falls back to the page address', () => {
   const [post] = adapter.posts(page('<article data-testid="tweet">Bez linku</article>')) as [
     Element,
   ]
+  assert.equal(adapter.url(post), 'https://x.com/home')
+})
+
+test('facebook: a live unit counts whatever its data-virtualized value, unless it is "true"', () => {
+  const adapter = postAdapter('facebook', () => 'https://www.facebook.com/')
+  const body = page(
+    `<div data-virtualized=""><span data-ad-rendering-role="profile_name">Ktoś</span></div>`,
+  )
+  assert.equal(adapter.posts(body).length, 1)
+})
+
+test('a post link the URL parser rejects falls back to the page address', () => {
+  const adapter = postAdapter('x', () => 'https://x.com/home')
+  const markup = '<article data-testid="tweet"><a href="http://[zly/status/1">x</a></article>'
+  const [post] = adapter.posts(page(markup)) as [Element]
   assert.equal(adapter.url(post), 'https://x.com/home')
 })
