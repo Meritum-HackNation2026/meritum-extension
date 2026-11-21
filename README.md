@@ -27,10 +27,10 @@ pnpm zip                   # .output/meritum-extension-<wersja>-chrome.zip
 
 Zasady architektury i to, co je sprawdza: [docs/architecture.md](docs/architecture.md).
 
-Ręcznie: `pnpm build`, potem `chrome://extensions` → tryb dewelopera → „Załaduj rozpakowane” → `.output/chrome-mv3`. Do testów są makiety na https://meritum-x.gburek.app (i pozostałe platformy, dev z sufiksem `-dev`).
+Ręcznie: `pnpm build`, potem `chrome://extensions` → tryb dewelopera → „Załaduj rozpakowane” → `.output/chrome-mv3`. Do testów są makiety na https://meritum-x.gburek.app (i pozostałe platformy).
 
 ## CI
 
-`.github/workflows/ci.yml` na runnerach GCP: Biome, typy, testy i zip na każdej gałęzi. Na `develop` i `main` zip zbudowany z adresem API danego środowiska trafia do artefaktów przebiegu (`meritum-extension-dev`, `meritum-extension-prd`, 30 dni). Wtyczki nie publikujemy w Chrome Web Store, więc nie ma osobnego CD.
+`.github/workflows/ci.yml` na runnerach GCP: Biome, typy, testy i zip na każdej gałęzi. Na `main` zip zbudowany z adresem API prd trafia do artefaktów przebiegu (`meritum-extension-prd`, 30 dni). Artefaktu `meritum-extension-dev` CI już nie buduje; wersję dev buduje się ręcznie z `WXT_API_URL`. Wtyczki nie publikujemy w Chrome Web Store, więc nie ma osobnego CD.
 
-Zasady gałęzi jak w pozostałych repo: PR do `develop`, potem `develop` → `main`, bez bezpośrednich pushy, gałęzie funkcji usuwane ręcznie po merge'u.
+Repo ma tylko gałąź `main`: zmiany przez PR do `main`, bez bezpośrednich pushy, gałęzie funkcji usuwane ręcznie po merge'u.
