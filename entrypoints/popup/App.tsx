@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import copy from '../../design-system/copy/pl.json' with { type: 'json' }
+import type { SessionStore } from '../../utils/session.ts'
+import { DeleteChecks } from './DeleteChecks.tsx'
 
 // Build-time API of the verification core (prd unless WXT_API_URL says otherwise).
 // `?.`: Vite fills import.meta.env at build time; under node --test it is undefined.
@@ -38,10 +40,11 @@ function badge(health: Health | null, failed: boolean): { state: string; text: s
 /**
  * The popup: the Meritum header with the API status and, later, the paste-to-check box.
  *
+ * @param props.storage - chrome.storage.local (or a fake in tests) holding the session_id.
  * @returns The popup content.
- * @feature US-WTY-02
+ * @feature US-WTY-02, US-BEZ-05, US-BEZ-06
  */
-export function App() {
+export function App({ storage }: { storage: SessionStore }) {
   const [health, setHealth] = useState<Health | null>(null)
   const [failed, setFailed] = useState(false)
 
@@ -71,6 +74,7 @@ export function App() {
             tekstu są w budowie.
           </p>
         </section>
+        <DeleteChecks apiUrl={apiUrl} storage={storage} />
       </main>
     </>
   )

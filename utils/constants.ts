@@ -39,3 +39,18 @@ export const MOCK_HOST = /^meritum-(x|facebook|instagram|reddit|tiktok)(?:-dev)?
  * @feature US-WTY-01, ADR-10
  */
 export const SITE_PREFIX = /^(www|m|mobile|old|new)\./
+
+/**
+ * chrome.storage.local key of the random session_id sent with every check.
+ *
+ * @feature US-BEZ-05, US-BEZ-06
+ */
+export const SESSION_ID_KEY = 'session_id'
+
+/**
+ * API path that deletes every check of one session; `{session_id}` is the id.
+ * shortcut: the name is ours until meritum-core and the backend define the endpoint (extension#24).
+ *
+ * @feature US-BEZ-05, US-BEZ-06
+ */
+export const DELETE_CHECKS_PATH = '/api/v1/sessions/{session_id}/checks'
