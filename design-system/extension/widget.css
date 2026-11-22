@@ -101,7 +101,8 @@ fieldset{border:0;min-width:0}
 .m-check[aria-busy="true"]{cursor:progress}
 .m-check[aria-busy="true"] .m-mark{animation:m-pulse 1.2s ease-in-out infinite}
 :host([data-host="x"]) .m-check{gap:4px;padding:0 8px 0 6px}
-:host([data-host="facebook"]) .m-check{border-radius:6px;height:32px;font-size:14px}
+/* facebook.com keeps the light text colour on the action row even in dark mode; its icons use --secondary-icon */
+:host([data-host="facebook"]) .m-check{border-radius:6px;height:32px;font-size:14px;color:var(--secondary-icon,inherit)}
 :host([data-host="instagram"]) .m-check{padding:0 8px 0 6px;border-radius:8px}
 :host([data-host="instagram"]) .m-check .m-mark{width:22px!important;height:22px!important}
 :host([data-host="reddit"]) .m-check{height:32px;padding:0 12px 0 8px;background:var(--m-reddit-btn,#E5EBEE);font-size:12px}
