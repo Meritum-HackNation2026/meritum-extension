@@ -55,4 +55,10 @@ Skrypt `scripts/sync.sh` (wzorem `contracts/sync.sh` w design systemie) potrzebu
 
 `.github/workflows/ci.yml` na runnerach GCP: Biome, typy, testy i zip na każdej gałęzi. Na `main` zip zbudowany z adresem API prd trafia do artefaktów przebiegu (`meritum-extension-prd`, 30 dni). Artefaktu `meritum-extension-dev` CI już nie buduje; wersję dev buduje się ręcznie z `WXT_API_URL`. Wtyczki nie publikujemy w Chrome Web Store, więc nie ma osobnego CD.
 
+## Wydania
+
+Gotowa wtyczka jest w [Releases](https://github.com/Meritum-HackNation2026/meritum-extension/releases): `meritum-extension-<wersja>-chrome.zip` (Chrome, Edge), `-firefox.zip` i `-chrome-dev.zip` (API dev), z sumami SHA-256. Chrome/Edge: rozpakuj, `chrome://extensions` → Tryb dewelopera → „Załaduj rozpakowane”. Firefox: rozpakuj, `about:debugging#/runtime/this-firefox` → „Wczytaj tymczasowy dodatek” → `manifest.json`.
+
+Wydanie robi `.github/workflows/release.yml`: po wypchnięciu tagu `v*` albo ręcznie (Actions → Release → Run workflow, z numerem wersji, np. `0.1.0`; tag powstaje na commicie przebiegu). Workflow uruchamia te same sprawdzenia co CI, ustawia wersję w `manifest.json` z tagu i tworzy wydanie przez `gh` z `GITHUB_TOKEN`. Paczki nie są podpisane i nie trafiają do sklepów; w paczce nie ma sekretów.
+
 Repo ma tylko gałąź `main`: zmiany przez PR do `main`, bez bezpośrednich pushy, gałęzie funkcji usuwane ręcznie po merge'u.

@@ -1,0 +1,97 @@
+name: Release
+
+# GitHub Release with ready-to-load packages (no store signing, no store publishing).
+# Trigger: a pushed tag v* (e.g. v0.1.0), or a manual run with a version number, which
+# creates the tag on the run's commit. Same install and checks as CI; the version in
+# manifest.json comes from the tag. Packages: Chrome/Edge MV3 zip and Firefox zip (API
+# prd), plus a Chrome zip pointing at dev; SHA-256 sums go in the release notes.
+# Only the gh CLI with GITHUB_TOKEN is used, no third-party release action.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version number without the v prefix, e.g. 0.1.0 (the tag v<version> is created)"
+        required: true
+        type: string
+
+permissions:
+  contents: write # create the tag and the release
+
+jobs:
+  release:
+    runs-on: [self-hosted, meritum]
+    timeout-minutes: 20
+    concurrency:
+      group: release
+      cancel-in-progress: false
+    env:
+      API_PRD: https://meritum.gburek.app
+      API_DEV: https://meritum-dev.gburek.app
+      GH_TOKEN: ${{ github.token }}
+      INPUT_VERSION: ${{ inputs.version }}
+    steps:
+      - name: Resolve version
+        run: |
+          raw="${INPUT_VERSION:-$GITHUB_REF_NAME}"
+          version="${raw#v}"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "Wrong version: $raw (expected 1.2.3 or v1.2.3)" >&2
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+      - run: npm install --global "$(node -p "require('./package.json').packageManager")"
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm biome ci --reporter=github --error-on-warnings .
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm depcruise
+      - run: pnpm knip
+      - name: Version from the tag
+        run: npm pkg set version="$VERSION"
+      - name: Build packages
+        run: |
+          WXT_API_URL="$API_PRD" pnpm zip
+          WXT_API_URL="$API_PRD" pnpm zip -b firefox
+          mv ".output/meritum-extension-$VERSION-chrome.zip" ".output/prd-chrome.zip"
+          WXT_API_URL="$API_DEV" pnpm zip
+          mv ".output/meritum-extension-$VERSION-chrome.zip" ".output/meritum-extension-$VERSION-chrome-dev.zip"
+          mv ".output/prd-chrome.zip" ".output/meritum-extension-$VERSION-chrome.zip"
+          rm ".output/meritum-extension-$VERSION-sources.zip"
+          cd .output
+          sha256sum -- *.zip > SHA256SUMS
+          cat SHA256SUMS
+      - name: Publish release
+        run: |
+          tag="v$VERSION"
+          flags=()
+          [[ "$VERSION" == *-* ]] && flags+=(--prerelease)
+          {
+            echo "Paczki wtyczki Meritum $VERSION do wgrania ręcznie (bez sklepu, bez podpisu)."
+            echo
+            echo "| Plik | Przeglądarka | API |"
+            echo "|---|---|---|"
+            echo "| \`meritum-extension-$VERSION-chrome.zip\` | Chrome, Edge (MV3) | prd: $API_PRD |"
+            echo "| \`meritum-extension-$VERSION-firefox.zip\` | Firefox | prd: $API_PRD |"
+            echo "| \`meritum-extension-$VERSION-chrome-dev.zip\` | Chrome, Edge (MV3) | dev: $API_DEV |"
+            echo
+            echo "## Jak wgrać"
+            echo
+            echo "**Chrome / Edge:** rozpakuj ZIP, otwórz \`chrome://extensions\` (Edge: \`edge://extensions\`), włącz Tryb dewelopera, wybierz Załaduj rozpakowane i wskaż rozpakowany katalog."
+            echo
+            echo "**Firefox:** rozpakuj ZIP, otwórz \`about:debugging#/runtime/this-firefox\`, wybierz Wczytaj tymczasowy dodatek i wskaż plik \`manifest.json\` z rozpakowanego katalogu. Dodatek znika po zamknięciu Firefoksa."
+            echo
+            echo "## Sumy SHA-256"
+            echo
+            echo '```'
+            cat .output/SHA256SUMS
+            echo '```'
+          } > release-notes.md
+          gh release create "$tag" .output/*.zip .output/SHA256SUMS \
+            --title "Meritum $VERSION" --notes-file release-notes.md \
+            --target "$GITHUB_SHA" "${flags[@]}"
