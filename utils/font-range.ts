@@ -3,6 +3,7 @@
  *
  * @feature US-WTY-05
  */
+import { UNICODE_RANGE_PART } from './constants.ts'
 
 /**
  * Whether a CSS `unicode-range` value covers one code point.
@@ -14,7 +15,7 @@
  */
 export function rangeCovers(range: string, point: number): boolean {
   return range.split(',').some((part) => {
-    const match = /U\+([0-9a-f?]+)(?:-([0-9a-f]+))?/i.exec(part)
+    const match = UNICODE_RANGE_PART.exec(part)
     if (!match?.[1]) return false
     const from = Number.parseInt(match[1].replaceAll('?', '0'), 16)
     const to = Number.parseInt(match[2] ?? match[1].replaceAll('?', 'f'), 16)

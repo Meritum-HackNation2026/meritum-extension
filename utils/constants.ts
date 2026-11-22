@@ -235,3 +235,10 @@ export const KNOWN_PROBLEMS = ['rate_limited', 'busy', 'offline', 'failed'] as c
  * @feature US-WTY-01, F-02
  */
 export const KNOWN_INPUT_ERRORS = ['empty', 'invalid_url', 'too_long'] as const
+
+/**
+ * One part of a CSS `unicode-range` value: `U+0061`, `U+0000-00FF` or `U+04??`.
+ *
+ * @feature US-WTY-05
+ */
+export const UNICODE_RANGE_PART = /U\+([0-9a-f?]+)(?:-([0-9a-f]+))?/i
