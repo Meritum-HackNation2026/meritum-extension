@@ -73,7 +73,7 @@ test('a pasted link goes to POST /api/v1/checks on the extension channel and the
   ask('https://example.pl/artykul')
 
   assert.ok(await screen.findByText(copy.verdict.false))
-  assert.ok(screen.getByText('Ziemia jest płaska.'))
+  assert.ok(screen.getByText('„Ziemia jest płaska.”'))
   assert.ok(screen.getByText(copy.result.ai_disclosure))
   assert.equal(api.sent.length, 1)
   const sent = api.sent[0]

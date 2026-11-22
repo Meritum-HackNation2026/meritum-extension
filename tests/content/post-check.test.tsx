@@ -131,7 +131,7 @@ test('a trusted click sends the post text and address and shows the verdict with
   const slot = shadow(hosts('slot')[1])
   const live = slot.querySelector('[aria-live="polite"]')
   assert.ok(live?.textContent?.includes(copy.verdict.false))
-  assert.ok(slot.querySelector('.m-badge.false'))
+  assert.ok(slot.querySelector('.m-verdict.false'))
   assert.ok(live?.textContent?.includes(copy.result.label))
   assert.ok(live?.textContent?.includes(copy.result.sources_title))
   assert.ok(live?.textContent?.includes('Gotówka pozostaje prawnym środkiem płatniczym.'))
@@ -190,7 +190,7 @@ test('on Instagram the widget takes the Instagram skin and keeps the Meritum ver
     assert.equal(host.getAttribute('data-host'), 'instagram')
   }
   const slot = shadow(hosts('slot')[0])
-  assert.ok(slot.querySelector('.m-badge.false')?.textContent === copy.verdict.false)
+  assert.ok(slot.querySelector('.m-verdict.false')?.textContent === copy.verdict.false)
   assert.ok(slot.querySelector('.m-srcs .m-frag'))
   assert.ok(slot.querySelector('.m-top .m-mark'))
 })
