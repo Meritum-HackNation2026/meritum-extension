@@ -5,7 +5,7 @@ name: Release
 # creates the tag on the run's commit. Same install and checks as CI; the version in
 # manifest.json comes from the tag. Packages: Chrome/Edge MV3 zip and Firefox zip (API
 # prd), plus a Chrome zip pointing at dev; SHA-256 sums go in the release notes.
-# Only the gh CLI with GITHUB_TOKEN is used, no third-party release action.
+# Only the gh CLI with GITHUB_TOKEN is used (installed pinned, the runner has none), no third-party release action.
 on:
   push:
     tags: ["v*"]
@@ -30,6 +30,8 @@ jobs:
       API_PRD: https://meritum.gburek.app
       API_DEV: https://meritum-dev.gburek.app
       GH_TOKEN: ${{ github.token }}
+      GH_VERSION: 2.105.0
+      GH_SHA256: 79e7ab5db738c48777b696e374f8b428f0647debfb424f44d2f426370407fe2f # linux_amd64
       INPUT_VERSION: ${{ inputs.version }}
     steps:
       - name: Resolve version
@@ -68,6 +70,12 @@ jobs:
           cat SHA256SUMS
       - name: Publish release
         run: |
+          # the runner has no gh: pinned by version and SHA-256, like gitleaks in secrets.yml
+          tgz="$RUNNER_TEMP/gh.tar.gz"
+          curl -fsSL -o "$tgz" "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz"
+          echo "$GH_SHA256  $tgz" | sha256sum -c -
+          tar -xzf "$tgz" -C "$RUNNER_TEMP" --strip-components=2 "gh_${GH_VERSION}_linux_amd64/bin/gh"
+          export PATH="$RUNNER_TEMP:$PATH"
           tag="v$VERSION"
           flags=()
           [[ "$VERSION" == *-* ]] && flags+=(--prerelease)
