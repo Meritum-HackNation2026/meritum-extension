@@ -19,6 +19,10 @@ export type ChannelUserId = string | null;
  * Web and extension only: random id kept in the browser session; the API copies it to CheckRecord.session_id.
  */
 export type RequestSessionId = string | null;
+export type AiGenerated = true;
+export type MarkerProvider = string;
+export type MarkerModel = string;
+export type GeneratedAt = string;
 export type Id = string;
 export type Title = string;
 export type Publisher = string;
@@ -168,11 +172,22 @@ export type Message = string | null;
  */
 export type FailureCode =
   ("provider_unavailable" | "web_search_unavailable" | "transcription_failed" | "url_unavailable" | "not_ready") | null;
+/**
+ * out_of_scope only: what is not handled; the channel picks the text from copy/pl.json and falls back to the generic one when it is empty. A rejected recording is audio; why it was rejected is in limitation_codes.
+ */
+export type OutOfScopeCode = ("image" | "audio" | "not_informational") | null;
 export type Limitations = string[];
 /**
- * Codes next to the limitation texts; the channel words them from copy/pl.json. They never change the status.
+ * Codes of the limitations the channel words from copy/pl.json; they never set the status, though the audio codes explain an out_of_scope recording. Paired with limitations by index: one code per text, same order.
  */
-export type LimitationCodes = ("fact_check_unavailable" | "image_search_not_run")[];
+export type LimitationCodes = (
+  | "fact_check_unavailable"
+  | "image_search_not_run"
+  | "audio_format_unsupported"
+  | "audio_too_long"
+  | "corpus_scope"
+  | "no_publications"
+)[];
 /**
  * Audio input only: the automatic transcript, with personal data masked.
  */
@@ -185,11 +200,22 @@ export type AiDisclosure = true;
 export type Status1 = "done" | "needs_clarification" | "out_of_scope";
 export type Claims1 = ClaimResult[];
 export type Message1 = string | null;
+/**
+ * out_of_scope only: what is not handled; the channel picks the text from copy/pl.json and falls back to the generic one when it is empty. A rejected recording is audio; why it was rejected is in limitation_codes.
+ */
+export type OutOfScopeCode1 = ("image" | "audio" | "not_informational") | null;
 export type Limitations1 = string[];
 /**
- * Codes next to the limitation texts; the channel words them from copy/pl.json. They never change the status.
+ * Codes of the limitations the channel words from copy/pl.json; they never set the status, though the audio codes explain an out_of_scope recording. Paired with limitations by index: one code per text, same order.
  */
-export type LimitationCodes1 = ("fact_check_unavailable" | "image_search_not_run")[];
+export type LimitationCodes1 = (
+  | "fact_check_unavailable"
+  | "image_search_not_run"
+  | "audio_format_unsupported"
+  | "audio_too_long"
+  | "corpus_scope"
+  | "no_publications"
+)[];
 /**
  * Audio input only: the automatic transcript, with personal data masked.
  */
@@ -335,18 +361,82 @@ export type SignatoryOf1 = ("ifcn" | "efcsn")[];
 export type Excluded = boolean;
 export type ExclusionReason = string | null;
 export type Id2 = string;
-export type Kind2 = "check_progress" | "check_done" | "moderator_answer" | "new_evidence" | "case_assigned" | "system";
+export type Kind2 =
+  "check_progress" | "check_done" | "moderator_answer" | "new_evidence" | "case_assigned" | "system" | "eval_run_done";
 export type Status4 = "unread" | "read";
 export type SessionId1 = string | null;
 export type UserId1 = string | null;
 export type CheckId3 = string | null;
 export type CaseId1 = string | null;
 /**
+ * check_progress only: the finished pipeline step; the text is analysis.steps.<code> in copy/pl.json.
+ */
+export type StepCode =
+  | (
+      | "receive"
+      | "fetch_url"
+      | "transcribe_audio"
+      | "screen_injection"
+      | "extract_claims"
+      | "search_corpus"
+      | "search_web"
+      | "search_fact_checks"
+      | "assess_evidence"
+      | "verify_citations"
+      | "write_answer"
+      | "save_record"
+    )
+  | null;
+/**
+ * system only: what the message says; the text is notifications.system_message.<code> in copy/pl.json, never free text.
+ */
+export type MessageCode = ("maintenance_planned" | "service_degraded" | "service_restored") | null;
+/**
  * In-app path to open.
  */
 export type Link = string;
 export type CreatedAt = string;
 export type RetentionUntil1 = string;
+export type CaseId2 = string;
+export type Scenario = string;
+export type CheckId4 = string | null;
+/**
+ * This interface was referenced by `MeritumContracts`'s JSON-Schema
+ * via the `definition` "EvalLabel".
+ */
+export type EvalLabel =
+  | ("confirmed" | "false" | "misleading" | "insufficient_evidence" | "not_verifiable")
+  | ("done" | "needs_clarification" | "out_of_scope" | "technical_failure");
+export type Outcome = "wrong_decisive" | "non_verdict" | "wrong_abstention" | "correct";
+export type ReceivedAt1 = string;
+export type AnsweredAt1 = string;
+export type Cases = number;
+export type MacroF1 = number;
+/**
+ * This interface was referenced by `MeritumContracts`'s JSON-Schema
+ * via the `definition` "Ratio".
+ */
+export type Ratio = number | null;
+/**
+ * This interface was referenced by `MeritumContracts`'s JSON-Schema
+ * via the `definition` "NonNegative".
+ */
+export type NonNegative = number;
+export type Scenario1 = string;
+export type Cases1 = number;
+export type Correct = number;
+export type Accuracy = number;
+export type Id3 = string;
+export type CaseSet = "golden" | "user_file";
+export type CaseFile = string | null;
+export type Status5 = "queued" | "running" | "done" | "failed";
+export type CorpusVersion3 = string;
+export type UserId2 = string | null;
+export type Models1 = string[];
+export type StartedAt = string;
+export type FinishedAt = string | null;
+export type Scenarios = EvalScenarioScore[];
+export type Cases2 = EvalCaseResult[];
 
 export interface MeritumContracts {
   [k: string]: unknown;
@@ -365,6 +455,21 @@ export interface CheckRequest {
   audio_id?: AudioId;
   channel_user_id?: ChannelUserId;
   session_id?: RequestSessionId;
+}
+/**
+ * Machine-readable marker that an AI system wrote the verdicts and justifications.
+ *
+ * Every channel gets the same marker from the result; how a channel shows it is up to
+ * the channel.
+ *
+ * This interface was referenced by `MeritumContracts`'s JSON-Schema
+ * via the `definition` "AiMarker".
+ */
+export interface AiMarker {
+  ai_generated?: AiGenerated;
+  provider: MarkerProvider;
+  model: MarkerModel;
+  generated_at: GeneratedAt;
 }
 /**
  * A fragment of a source and how it bears on the claim. The pipeline drops fragments it cannot find verbatim.
@@ -543,6 +648,7 @@ export interface CheckResult {
   claims?: Claims;
   message?: Message;
   failure_code?: FailureCode;
+  out_of_scope_code?: OutOfScopeCode;
   limitations?: Limitations;
   limitation_codes?: LimitationCodes;
   transcript?: Transcript;
@@ -550,6 +656,10 @@ export interface CheckResult {
   escalation?: Escalation | null;
   corpus_version: CorpusVersion;
   ai_disclosure?: AiDisclosure;
+  /**
+   * Machine-readable marker that an AI system wrote the answer (AI Act art. 50(2)); required on a finished check.
+   */
+  ai_marker?: AiMarker | null;
 }
 /**
  * What the result cache keeps: only the substantive part of a CheckResult.
@@ -565,10 +675,15 @@ export interface CachedResult {
   status: Status1;
   claims?: Claims1;
   message?: Message1;
+  out_of_scope_code?: OutOfScopeCode1;
   limitations?: Limitations1;
   limitation_codes?: LimitationCodes1;
   transcript?: Transcript1;
   source_warning?: SourceStatusWarning | null;
+  /**
+   * Machine-readable marker that an AI system wrote the answer (AI Act art. 50(2)); required on a finished check.
+   */
+  ai_marker?: AiMarker | null;
   corpus_version: CorpusVersion1;
   source_ids?: SourceIds;
   cached_at: CachedAt;
@@ -721,7 +836,84 @@ export interface Notification {
   user_id?: UserId1;
   check_id?: CheckId3;
   case_id?: CaseId1;
+  step_code?: StepCode;
+  message_code?: MessageCode;
   link: Link;
   created_at: CreatedAt;
   retention_until: RetentionUntil1;
+}
+/**
+ * One case of a run: expected and predicted label, outcome, time and cost.
+ *
+ * A state that is not a verdict (technical_failure included) stays the predicted
+ * label and falls into one separate error class.
+ *
+ * This interface was referenced by `MeritumContracts`'s JSON-Schema
+ * via the `definition` "EvalCaseResult".
+ */
+export interface EvalCaseResult {
+  case_id: CaseId2;
+  scenario: Scenario;
+  check_id?: CheckId4;
+  expected: EvalLabel;
+  predicted: EvalLabel;
+  outcome: Outcome;
+  received_at: ReceivedAt1;
+  answered_at: AnsweredAt1;
+  cost_usd?: number;
+}
+/**
+ * The metrics of one run, as the meritum-eval report computes them.
+ *
+ * This interface was referenced by `MeritumContracts`'s JSON-Schema
+ * via the `definition` "EvalMetrics".
+ */
+export interface EvalMetrics {
+  cases: Cases;
+  macro_f1: MacroF1;
+  citation_coverage: Ratio;
+  citation_correctness: Ratio;
+  abstention: Ratio;
+  robustness: Ratio;
+  median_seconds: NonNegative;
+  p95_seconds: NonNegative;
+  max_seconds: NonNegative;
+  input_tokens_per_check: NonNegative;
+  output_tokens_per_check: NonNegative;
+  cost_per_check_usd: NonNegative;
+  cost_100_checks_usd: NonNegative;
+  channel_consistency: Ratio;
+  information_loop: Ratio;
+}
+/**
+ * Quality per scenario, so runs on different models compare by scenario.
+ *
+ * This interface was referenced by `MeritumContracts`'s JSON-Schema
+ * via the `definition` "EvalScenarioScore".
+ */
+export interface EvalScenarioScore {
+  scenario: Scenario1;
+  cases: Cases1;
+  correct: Correct;
+  accuracy: Accuracy;
+}
+/**
+ * One evaluation run on the golden set or a staff user's case file.
+ *
+ * This interface was referenced by `MeritumContracts`'s JSON-Schema
+ * via the `definition` "EvalRun".
+ */
+export interface EvalRun {
+  id: Id3;
+  case_set: CaseSet;
+  case_file?: CaseFile;
+  status: Status5;
+  corpus_version: CorpusVersion3;
+  user_id?: UserId2;
+  models?: Models1;
+  started_at: StartedAt;
+  finished_at?: FinishedAt;
+  metrics?: EvalMetrics | null;
+  scenarios?: Scenarios;
+  cases?: Cases2;
 }

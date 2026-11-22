@@ -6,6 +6,7 @@
  */
 import type { CheckResult, FailureCode, Status } from '../design-system/contracts/meritum.ts'
 import copy from '../design-system/copy/pl.json' with { type: 'json' }
+import type { CheckProblem } from './check.ts'
 
 /**
  * The hint under a state that is not a verdict: the failure code's copy, else the status hint.
@@ -33,4 +34,16 @@ export function limitationTexts(result: CheckResult): string[] {
   return (result.limitation_codes ?? [])
     .map((code): string | undefined => copy.limitation_code[code])
     .filter((text) => text !== undefined)
+}
+
+/**
+ * Why a sent check has no result, one Polish sentence per problem, for the popup and the widget.
+ *
+ * @feature US-WTY-02, F-02
+ */
+export const problemText: Record<CheckProblem, string> = {
+  rate_limited: copy.errors.rate_limited,
+  busy: copy.errors.busy,
+  offline: copy.errors.offline,
+  failed: copy.status_hint.technical_failure,
 }

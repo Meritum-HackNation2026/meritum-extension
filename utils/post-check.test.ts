@@ -9,7 +9,7 @@ import { test } from 'node:test'
 import type { CheckResult } from '../design-system/contracts/meritum.ts'
 import { toPostRequest } from './check.ts'
 import { CHECK_POST_MESSAGE } from './constants.ts'
-import { answerPostCheck, postCheckListener } from './post-check.ts'
+import { answerPostCheck, postCheckListener, toPostOutcome } from './post-check.ts'
 
 const api = 'https://api.test'
 const result: CheckResult = { check_id: 'c1', status: 'out_of_scope', corpus_version: 'v1' }
@@ -110,4 +110,22 @@ test('the runtime listener ignores other extensions and foreign messages', (t) =
   assert.equal(listen(message, { id: 'inna-wtyczka' }, reply), false)
   assert.equal(listen({ type: 'inne' }, { id: 'meritum-id' }, reply), false)
   assert.equal(fetch.mock.callCount(), 0)
+})
+
+test('a background reply that is not an outcome becomes a technical problem', () => {
+  const failed = { problem: 'failed' }
+  for (const reply of [
+    undefined,
+    null,
+    'x',
+    {},
+    { problem: 'nope' },
+    { result: 1 },
+    { input: 'x' },
+  ]) {
+    assert.deepEqual(toPostOutcome(reply), failed)
+  }
+  assert.deepEqual(toPostOutcome({ result }), { result })
+  assert.deepEqual(toPostOutcome({ problem: 'offline' }), { problem: 'offline' })
+  assert.deepEqual(toPostOutcome({ input: 'empty' }), { input: 'empty' })
 })

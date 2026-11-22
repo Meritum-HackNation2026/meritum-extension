@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import copy from '../../design-system/copy/pl.json' with { type: 'json' }
 import { toPostRequest } from '../../utils/check.ts'
 import type { PostCheckMessage, PostOutcome } from '../../utils/post-check.ts'
-import { Mark } from './Mark.tsx'
+import { Mark } from '../shared/Mark.tsx'
 import { ResultCard } from './ResultCard.tsx'
 
 /**
@@ -66,7 +66,7 @@ export function PostCheck({ read, send, slot }: PostCheckProps) {
         aria-busy={busy}
         onClick={check}
       >
-        <Mark size={18} />
+        <Mark where="widget" size={18} />
         <span>{label(busy, outcome)}</span>
       </button>
       {createPortal(<ResultCard outcome={outcome} />, slot)}

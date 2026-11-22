@@ -1,17 +1,10 @@
 import type { CheckResult, Verdict } from '../../design-system/contracts/meritum.ts'
 import copy from '../../design-system/copy/pl.json' with { type: 'json' }
-import type { CheckOutcome, CheckProblem } from '../../utils/check.ts'
-import { limitationTexts, statusHint } from '../../utils/result-copy.ts'
+import type { CheckOutcome } from '../../utils/check.ts'
+import { limitationTexts, problemText, statusHint } from '../../utils/result-copy.ts'
 
 // Badge tone per verdict, as in design-system/extension/popup/popup.js; the rest stay neutral.
 const tone: Partial<Record<Verdict, string>> = { confirmed: 'ok', false: 'bad', misleading: 'pend' }
-
-const problemText: Record<CheckProblem, string> = {
-  rate_limited: copy.errors.rate_limited,
-  busy: copy.errors.busy,
-  offline: copy.errors.offline,
-  failed: copy.status_hint.technical_failure,
-}
 
 function Limitations({ result }: { result: CheckResult }) {
   const texts = limitationTexts(result)

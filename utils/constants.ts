@@ -221,3 +221,17 @@ export const WIDGET_TAG = 'meritum-root'
  * @feature US-WTY-05, ADR-09
  */
 export const DARK_CLASS = 'dark'
+
+/**
+ * The `CheckProblem` keys the widget can word; anything else from the background is `failed`.
+ *
+ * @feature US-WTY-01, F-02
+ */
+export const KNOWN_PROBLEMS = ['rate_limited', 'busy', 'offline', 'failed'] as const
+
+/**
+ * The `InputError` keys the widget can word.
+ *
+ * @feature US-WTY-01, F-02
+ */
+export const KNOWN_INPUT_ERRORS = ['empty', 'invalid_url', 'too_long'] as const

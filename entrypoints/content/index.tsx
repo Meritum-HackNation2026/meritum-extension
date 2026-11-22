@@ -7,7 +7,7 @@ import {
   WIDGET_TAG,
 } from '../../utils/constants.ts'
 import { platformOf } from '../../utils/platform.ts'
-import type { PostCheckMessage, PostOutcome } from '../../utils/post-check.ts'
+import { type PostCheckMessage, type PostOutcome, toPostOutcome } from '../../utils/post-check.ts'
 import { postAdapter } from '../../utils/posts/index.ts'
 import { isDarkBackground } from '../../utils/theme.ts'
 import { scanner } from './mount.tsx'
@@ -64,9 +64,9 @@ export default defineContentScript({
       adapter: postAdapter(platform, () => location.href),
       sheet,
       dark: pageIsDark,
-      // The background validates the API answer (utils/check.ts) before it replies.
-      send: (message: PostCheckMessage) =>
-        browser.runtime.sendMessage(message) as Promise<PostOutcome>,
+      // The background validates the API answer (utils/check.ts); a missing or foreign reply fails.
+      send: async (message: PostCheckMessage): Promise<PostOutcome> =>
+        toPostOutcome(await browser.runtime.sendMessage(message)),
     })
     scan(document)
     // Feeds load posts without a reload: one throttled rescan per burst of mutations.
