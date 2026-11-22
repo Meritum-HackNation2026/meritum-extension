@@ -162,3 +162,27 @@ test('tiktok: the result floats over the video frame, not over the action column
   adapter.mount(post, document.createElement('meritum-root'), slot)
   assert.equal(slot.parentElement?.getAttribute('data-e2e'), 'feed-video')
 })
+
+test('facebook: the result goes after the post footer, outside the fixed-height bar box', () => {
+  const adapter = postAdapter('facebook', () => 'https://www.facebook.com/')
+  const [post] = adapter.posts(
+    page(`<div data-virtualized="false"><div class="body">
+      <div class="head"><span data-ad-rendering-role="profile_name">Ktoś</span></div>
+      <div class="footer"><div class="clip"><div class="row">
+        <div><div role="button"><span data-ad-rendering-role="like_button"></span></div></div>
+        <div><div role="button"><span data-ad-rendering-role="share_button"></span></div></div>
+      </div></div></div></div></div>`),
+  ) as [Element]
+  const slot = document.createElement('meritum-root')
+  adapter.mount(post, document.createElement('meritum-root'), slot)
+  assert.equal(slot.previousElementSibling, post.querySelector('.footer'))
+})
+
+test('facebook: an ad without the message preview is read from story_message', () => {
+  const adapter = postAdapter('facebook', () => 'https://www.facebook.com/')
+  const [ad] = adapter.posts(
+    page(`<div data-virtualized="false"><span data-ad-rendering-role="profile_name">Sklep</span>
+      <div data-ad-rendering-role="story_message"><div dir="auto">Tekst reklamy</div></div></div>`),
+  ) as [Element]
+  assert.equal(adapter.text(ad), 'Tekst reklamy')
+})

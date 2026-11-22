@@ -84,7 +84,14 @@ const parts: Record<Platform, Parts> = {
       if (!row) return false
       const shareItem = [...row.children].find((c) => c.contains(share)) ?? null
       row.insertBefore(button, shareItem?.nextSibling ?? null)
-      row.after(slot)
+      // The bar sits in a fixed-height footer under an overflow:hidden box, so the result goes
+      // after that footer: the child of the post body (common ancestor with the author) that
+      // holds the bar.
+      const author = post.querySelector(facebook.author)
+      const body = author && commonAncestor(row, author)
+      const footer = body && [...body.children].find((c) => c.contains(row))
+      const before = footer ?? row
+      before.after(slot)
       return true
     },
   },

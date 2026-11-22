@@ -22,7 +22,8 @@ export const POST_SELECTORS = {
   facebook: {
     author: '[data-ad-rendering-role="profile_name"]',
     unit: '[data-virtualized]',
-    text: '[data-ad-preview="message"]',
+    // Ads keep their text in story_message without the message preview inside.
+    text: '[data-ad-preview="message"], [data-ad-rendering-role="story_message"]',
     link: 'a[href*="/posts/"], a[href*="/videos/"], a[href*="story_fbid"]',
     like: '[data-ad-rendering-role="like_button"]',
     share: '[data-ad-rendering-role="share_button"]',
