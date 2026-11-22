@@ -44,4 +44,10 @@ footer{padding:10px 16px 12px;border-top:1px solid var(--line2)}
 .field::placeholder{color:var(--ink2)}
 .field:focus{outline:2px solid var(--sea);outline-offset:-1px;border-color:transparent}
 .err{font-size:12.5px;line-height:17px;color:var(--red-tx)}
-.rows .badge:not(.ok):not(.bad):not(.pend){background:var(--raised);color:var(--ink2)}
+/* result: the verdict leads, large and in its ink, no pill; the claim quoted, 16px body (design-system#108) */
+.verdict-block{padding:6px 0 14px}
+.verdict-block+.verdict-block{padding-top:14px}
+.verdict{font:700 28px/32px var(--brand);font-stretch:112%;letter-spacing:-.01em;text-wrap:balance}
+.verdict.ok{color:var(--sea-tx)}.verdict.pend{color:var(--amber-tx)}.verdict.bad{color:var(--red-tx)}
+.verdict-block h3{margin-top:6px;font:600 16px/24px var(--brand);text-wrap:pretty}
+.verdict-block p:last-child{margin-top:10px;font-size:16px;line-height:24px;text-wrap:pretty}

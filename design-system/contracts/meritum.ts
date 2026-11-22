@@ -12,6 +12,10 @@ export type PageUrl = string | null;
  */
 export type AudioId = string | null;
 /**
+ * Uploaded screenshot or photo with text; read by OCR in an EU region, then checked like text. Excludes text, url and audio_id.
+ */
+export type ImageId = string | null;
+/**
  * Discord, SMS and MCP only: user id, phone number or MCP client id. The API hashes it with a salt into channel_user_hash and never stores it.
  */
 export type ChannelUserId = string | null;
@@ -32,12 +36,16 @@ export type Publisher = string;
 export type PublisherId = string;
 export type Url1 = string;
 export type Domain = string;
-export type Kind = "akt_prawny" | "dane_publiczne" | "instytucja" | "fact_check" | "media";
+export type Kind = "akt_prawny" | "dane_publiczne" | "instytucja" | "fact_check" | "media" | "transcript";
 export type Tier = "primary" | "secondary";
 export type PublishedAt = string | null;
 export type FetchedAt = string;
 export type Language = string;
 export type Via = "corpus" | "rss" | "web_search" | "mcp";
+/**
+ * Age threshold from the source's catalogue entry (since v14); absent means 365 days.
+ */
+export type MaxAgeHours = number | null;
 export type Fragment = string;
 export type Stance = "supports" | "refutes" | "context";
 /**
@@ -62,6 +70,10 @@ export type IndependentSources = number;
  */
 export type PrimarySources = number;
 /**
+ * Distinct IFCN/EFCSN fact-checkers (publisher_id) whose ClaimReview rating agrees with the verdict; one is enough for at least moderate strength.
+ */
+export type SignatoryReviews = number;
+/**
  * Publication date of the newest agreeing source, shown as a date.
  */
 export type NewestSourcePublishedAt = string | null;
@@ -72,7 +84,7 @@ export type NewestSourceAgeHours = number | null;
 /**
  * Threshold from the catalogue entry of the newest source.
  */
-export type MaxAgeHours = number;
+export type MaxAgeHours1 = number;
 export type Validity1 = "expires" | "in_force" | "updated_in_place" | "past_event" | "superseded";
 export type Agreement = "consistent" | "conflicting";
 export type Citations = Citation[];
@@ -185,6 +197,8 @@ export type LimitationCodes = (
   | "image_search_not_run"
   | "audio_format_unsupported"
   | "audio_too_long"
+  | "image_format_unsupported"
+  | "image_too_large"
   | "corpus_scope"
   | "no_publications"
 )[];
@@ -192,6 +206,10 @@ export type LimitationCodes = (
  * Audio input only: the automatic transcript, with personal data masked.
  */
 export type Transcript = string | null;
+/**
+ * Image input only: the text read from the image, with personal data masked.
+ */
+export type ImageText = string | null;
 /**
  * Id of the scheduled corpus snapshot.
  */
@@ -213,6 +231,8 @@ export type LimitationCodes1 = (
   | "image_search_not_run"
   | "audio_format_unsupported"
   | "audio_too_long"
+  | "image_format_unsupported"
+  | "image_too_large"
   | "corpus_scope"
   | "no_publications"
 )[];
@@ -220,6 +240,10 @@ export type LimitationCodes1 = (
  * Audio input only: the automatic transcript, with personal data masked.
  */
 export type Transcript1 = string | null;
+/**
+ * Image input only: the text read from the image, with personal data masked.
+ */
+export type ImageText1 = string | null;
 export type CorpusVersion1 = string;
 /**
  * Ids of the sources cited in the claims.
@@ -246,6 +270,10 @@ export type CheckId1 = string;
  * @minItems 1
  */
 export type Steps = [AnalysisStep, ...AnalysisStep[]];
+/**
+ * Streamed draft of the answer, personal data masked; a preview, never a verdict.
+ */
+export type Draft = string | null;
 export type Location = "input" | "source";
 export type Action = "instruction_removed" | "source_dropped";
 export type SourceUrl = string | null;
@@ -329,7 +357,7 @@ export type AssigneeRole = "moderator" | "analyst";
 export type Domain1 = string;
 export type Publisher3 = string;
 export type PublisherId2 = string;
-export type Kind1 = "akt_prawny" | "dane_publiczne" | "instytucja" | "fact_check" | "media";
+export type Kind1 = "akt_prawny" | "dane_publiczne" | "instytucja" | "fact_check" | "media" | "transcript";
 export type Tier1 = "primary" | "secondary";
 /**
  * source_status: a list (sanctions, CERT warnings) that ingest skips; a check uses it only for a neutral source-status warning, never as evidence.
@@ -348,7 +376,7 @@ export type Validity2 = "expires" | "in_force" | "updated_in_place" | "past_even
 /**
  * Shorter threshold for short-lived sources (warnings, roads, weather: hours or days).
  */
-export type MaxAgeHours1 = number | null;
+export type MaxAgeHours2 = number | null;
 export type QualifiedBecause = string;
 /**
  * Machine-readable text and data mining opt-out (robots.txt incl. Content-Signal, meta tags, tdmrep), checked per domain.
@@ -360,6 +388,7 @@ export type TdmReservation = "none" | "reserved" | "unknown";
 export type SignatoryOf1 = ("ifcn" | "efcsn")[];
 export type Excluded = boolean;
 export type ExclusionReason = string | null;
+export type Disclaimer = string | null;
 export type Id2 = string;
 export type Kind2 =
   "check_progress" | "check_done" | "moderator_answer" | "new_evidence" | "case_assigned" | "system" | "eval_run_done";
@@ -453,6 +482,7 @@ export interface CheckRequest {
   url?: Url;
   page_url?: PageUrl;
   audio_id?: AudioId;
+  image_id?: ImageId;
   channel_user_id?: ChannelUserId;
   session_id?: RequestSessionId;
 }
@@ -503,6 +533,7 @@ export interface Source {
   fetched_at: FetchedAt;
   language?: Language;
   via?: Via;
+  max_age_hours?: MaxAgeHours;
 }
 /**
  * One checked claim. Citations (source material) are kept apart from `explanation` (model interpretation).
@@ -545,9 +576,10 @@ export interface EvidenceStrength {
 export interface Premises {
   independent_sources: IndependentSources;
   primary_sources: PrimarySources;
+  signatory_reviews?: SignatoryReviews;
   newest_source_published_at?: NewestSourcePublishedAt;
   newest_source_age_hours?: NewestSourceAgeHours;
-  max_age_hours?: MaxAgeHours;
+  max_age_hours?: MaxAgeHours1;
   validity?: Validity1;
   agreement: Agreement;
 }
@@ -652,6 +684,7 @@ export interface CheckResult {
   limitations?: Limitations;
   limitation_codes?: LimitationCodes;
   transcript?: Transcript;
+  image_text?: ImageText;
   source_warning?: SourceStatusWarning | null;
   escalation?: Escalation | null;
   corpus_version: CorpusVersion;
@@ -679,6 +712,7 @@ export interface CachedResult {
   limitations?: Limitations1;
   limitation_codes?: LimitationCodes1;
   transcript?: Transcript1;
+  image_text?: ImageText1;
   source_warning?: SourceStatusWarning | null;
   /**
    * Machine-readable marker that an AI system wrote the answer (AI Act art. 50(2)); required on a finished check.
@@ -709,6 +743,7 @@ export interface AnalysisStatus {
   check_id: CheckId1;
   steps: Steps;
   result?: CheckResult | null;
+  draft?: Draft;
 }
 /**
  * Instructions found in the input or a source. Logged and never executed.
@@ -806,18 +841,23 @@ export interface CatalogEntry {
   publisher: Publisher3;
   publisher_id: PublisherId2;
   kind: Kind1;
+  kind_by_path?: KindByPath;
   tier: Tier1;
   role?: Role;
   license: License;
   ingest: Ingest;
   refresh_minutes?: RefreshMinutes;
   validity?: Validity2;
-  max_age_hours?: MaxAgeHours1;
+  max_age_hours?: MaxAgeHours2;
   qualified_because: QualifiedBecause;
   tdm_reservation?: TdmReservation;
   signatory_of?: SignatoryOf1;
   excluded?: Excluded;
   exclusion_reason?: ExclusionReason;
+  disclaimer?: Disclaimer;
+}
+export interface KindByPath {
+  [k: string]: "akt_prawny" | "dane_publiczne" | "instytucja" | "fact_check" | "media" | "transcript";
 }
 /**
  * An inbox entry, pushed live over SSE or WebSocket from DBOS events and shown as a toast.

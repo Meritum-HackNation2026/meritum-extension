@@ -56,17 +56,10 @@
   const syncDark = () => out.classList.toggle('dark', document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches));
   syncDark();
 
-  const toRequest = raw => {
-    const v = raw.trim();
-    if (/^\S+$/.test(v) && /^(https?:\/\/|www\.)/i.test(v)) {
-      try { const u = new URL(v); return /^https?:$/.test(u.protocol) ? { channel: 'extension', url: u.href } : 'invalid_url'; } catch { return 'invalid_url'; }
-    }
-    return v.length < 3 ? 'empty' : { channel: 'extension', text: v };
-  };
   ta.addEventListener('input', () => { submit.disabled = ta.value.trim().length < 3; err.hidden = true; });
   $('[data-form]').addEventListener('submit', async e => {
     e.preventDefault();
-    const req = toRequest(ta.value);
+    const req = MeritumInput.toRequest(ta.value, 'extension');
     if (typeof req === 'string') { err.textContent = T.errors[req]; err.hidden = false; return; }
     submit.disabled = true; submit.textContent = T.form.checking;
     out.hidden = false;

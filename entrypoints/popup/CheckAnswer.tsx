@@ -3,7 +3,7 @@ import copy from '../../design-system/copy/pl.json' with { type: 'json' }
 import type { CheckOutcome } from '../../utils/check.ts'
 import { limitationTexts, problemText, statusHint } from '../../utils/result-copy.ts'
 
-// Badge tone per verdict, as in design-system/extension/popup/popup.js; the rest stay neutral.
+// Ink per verdict word; red only for „Fałszywe”, the two non-settling verdicts stay neutral.
 const tone: Partial<Record<Verdict, string>> = { confirmed: 'ok', false: 'bad', misleading: 'pend' }
 
 function Limitations({ result }: { result: CheckResult }) {
@@ -37,22 +37,14 @@ function Result({ result }: { result: CheckResult }) {
   return (
     <>
       {claims.length === 0 && <p>{copy.result.no_result_hint}</p>}
-      {claims.length > 0 && (
-        <ul className="rows">
-          {claims.map((claim, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: claims never reorder and two may share a text
-            <li key={i}>
-              <span className="grow">
-                {claim.claim}
-                <span className="m">{claim.explanation}</span>
-              </span>
-              <span className={`badge ${tone[claim.verdict] ?? ''}`}>
-                {copy.verdict[claim.verdict]}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+      {claims.map((claim, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: claims never reorder and two may share a text
+        <article key={i} className="verdict-block">
+          <p className={`verdict ${tone[claim.verdict] ?? ''}`}>{copy.verdict[claim.verdict]}</p>
+          <h3>„{claim.claim}”</h3>
+          <p>{claim.explanation}</p>
+        </article>
+      ))}
       <p className="muted small">{copy.result.ai_disclosure}</p>
     </>
   )

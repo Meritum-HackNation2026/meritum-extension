@@ -150,41 +150,44 @@ fieldset{border:0;min-width:0}
 :host([data-host="instagram"]) .m-card{border-width:1px 0;border-color:var(--m-line)}
 :host([data-host="instagram"]) :is(.m-top,.m-claim,.m-foot,.m-status){padding-left:0;padding-right:0}
 .m-reveal.open .m-card{animation:m-rise .5s .08s var(--m-e) both}
-.m-top{display:flex;align-items:center;gap:6px;padding:11px 14px 0;font:600 12px/1 var(--m-brand);color:var(--m-ink2)}
-.m-claim{padding:10px 14px 12px;border-bottom:1px solid var(--m-line2)}
-.m-claim:last-of-type{border-bottom:0}
-.m-claim-h{display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 8px}
-.m-claim-h h3{flex:1;min-width:60%;font:700 15px/1.35 var(--m-font)}
-.m-badge{flex:none;font:650 12px/1 var(--m-brand);padding:5px 9px;border-radius:999px;white-space:nowrap}
-.m-badge.confirmed{color:var(--m-ok);background:var(--m-sea-t)}
-.m-badge.misleading{color:var(--m-amber);background:var(--m-amber-t)}
-.m-badge.false{color:var(--m-red-d);background:var(--m-red-t)}
-.m-badge.insufficient_evidence,.m-badge.not_verifiable{color:var(--m-ink2);background:var(--m-line2)}
-.m-sub{margin-top:2px;font-size:12.5px;line-height:1.4;color:var(--m-ink2)}
-.m-expl{margin-top:10px;font-size:15px;line-height:1.45}
-.m-h{margin-top:12px;font:600 12px/1.3 var(--m-brand);color:var(--m-ink2)}
+.m-top{display:flex;align-items:center;gap:6px;padding:12px 16px 0;font:600 12px/1 var(--m-brand);color:var(--m-ink2)}
+/* identity of design-system#108: the verdict leads each claim, large and in its ink, no pill; hierarchy from scale and
+   space, not from borders. 16px body (--text-body), the verdict word at --text-verdict (28px) */
+.m-claim{padding:18px 16px 4px}
+.m-claim+.m-claim{margin-top:10px}
+.m-verdict{display:block;font:700 28px/32px var(--m-brand);font-stretch:112%;letter-spacing:-.01em;text-wrap:balance}
+.m-verdict.confirmed{color:var(--m-ok)}
+.m-verdict.misleading{color:var(--m-amber)}
+.m-verdict.false{color:var(--m-red-d)}
+.m-verdict.insufficient_evidence,.m-verdict.not_verifiable{color:var(--m-ink)}
+.m-claim h3{margin-top:6px;font:600 16px/24px var(--m-font);text-wrap:pretty}
+.m-sub{margin-top:2px;font-size:14px;line-height:20px;color:var(--m-ink2)}
+.m-expl{margin-top:12px;font-size:16px;line-height:24px;text-wrap:pretty}
+.m-h{margin-top:16px;font:600 14px/20px var(--m-brand);color:var(--m-ink2)}
+/* source as evidence: the quote first with its opening quotation mark hanging in the margin, the attribution under it, no box */
 .m-srcs{list-style:none}
-.m-srcs li{display:grid;gap:5px;padding:8px 0;border-bottom:1px solid var(--m-line2)}
-.m-srcs li:last-child{border-bottom:0}
-.m-srcs a{font-weight:650;font-size:13.5px;color:var(--m-link);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--m-link) 35%,transparent);text-underline-offset:3px}
+.m-srcs li{display:grid;gap:6px;padding:8px 0 8px 24px}
+.m-frag{position:relative;font-size:16px;line-height:24px;text-wrap:pretty}
+.m-frag:before{content:"\201E";position:absolute;left:-24px;top:-4px;font:700 22px/1 var(--m-brand);color:var(--m-sea);speak:never}
+.m-srcs .m-sub{margin-top:0}
+.m-srcs a{display:block;width:fit-content;font-weight:650;color:var(--m-link);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--m-link) 35%,transparent);text-underline-offset:3px}
 .m-srcs a:hover{text-decoration-color:currentColor}
-.m-frag{background:var(--m-line2);border-radius:8px;padding:8px 11px;font-size:13.5px;line-height:1.45}
 .m-sides{display:grid;gap:0 16px}
 @container (min-width:460px){.m-sides{grid-template-columns:1fr 1fr}}
 .m-card{container-type:inline-size}
-.m-str{margin-top:10px;font-size:13.5px;font-weight:650;display:flex;align-items:center;gap:8px}
+.m-str{margin-top:12px;font-size:14px;font-weight:650;display:flex;align-items:center;gap:8px}
 .m-str .lv{display:flex;align-items:flex-end;gap:2px}
 .m-str .lv i{width:4px;border-radius:1px;background:var(--m-line)}
 .m-str .lv i.on{background:var(--m-ink)}
-.m-note{margin-top:10px;padding-top:8px;border-top:1px solid var(--m-line2);font-size:13.5px;line-height:1.4;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.m-note{margin-top:12px;font-size:14px;line-height:20px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
 .m-note a{color:inherit;text-underline-offset:3px}
 .m-note .m-t{cursor:help;text-decoration:underline dotted;text-underline-offset:3px}
-.m-status{display:flex;gap:10px;align-items:flex-start;padding:10px 14px 4px}
-.m-status b{display:block;font:700 15px var(--m-font)}
-.m-status p{font-size:14px;line-height:1.45}
+.m-status{display:flex;gap:10px;align-items:flex-start;padding:14px 16px 4px}
+.m-status b{display:block;font:700 16px/24px var(--m-font)}
+.m-status p{font-size:16px;line-height:24px}
 .m-status .m-ic{margin-top:3px;color:var(--m-ink2)}
-.m-foot{display:grid;gap:6px;padding:10px 14px 13px;border-top:1px solid var(--m-line2);font-size:12.5px;line-height:1.4;color:var(--m-ink2)}
-.m-foot .esc{font-size:13.5px;color:var(--m-ink)}
+.m-foot{display:grid;gap:6px;padding:14px 16px 16px;font-size:14px;line-height:20px;color:var(--m-ink2)}
+.m-foot .esc{font-size:14px;color:var(--m-ink)}
 .m-foot ul{padding-left:16px}
 
 @keyframes m-rise{from{opacity:0;transform:translateY(8px)}}

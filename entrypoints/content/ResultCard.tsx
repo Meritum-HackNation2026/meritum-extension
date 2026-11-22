@@ -23,17 +23,20 @@ function Source({ citation }: { citation: Citation }) {
     : copy.result.source_undated.replace('{publisher}', source.publisher)
   return (
     <li>
-      {isHttps(source.url) ? (
-        <a href={source.url} target="_blank" rel="noopener noreferrer">
-          {source.title}
-        </a>
-      ) : (
-        <span>{source.title}</span>
-      )}
-      <span className="m-sub">{meta}</span>
       <blockquote className="m-frag">
-        <span className="m-sr">{copy.result.fragment}: </span>„{fragment}”
+        <span className="m-sr">{copy.result.fragment}: </span>
+        {fragment}”
       </blockquote>
+      <span className="m-sub">
+        {isHttps(source.url) ? (
+          <a href={source.url} target="_blank" rel="noopener noreferrer">
+            {source.title}
+          </a>
+        ) : (
+          <span>{source.title}</span>
+        )}{' '}
+        {meta}
+      </span>
     </li>
   )
 }
@@ -42,16 +45,12 @@ function Claim({ claim }: { claim: ClaimResult }) {
   const citations = claim.citations ?? []
   return (
     <article className="m-claim">
-      <div className="m-claim-h">
-        <h3>
-          <span className="m-sr">{copy.result.claim}: </span>
-          {claim.claim}
-        </h3>
-        <span className={`m-badge ${claim.verdict}`}>{copy.verdict[claim.verdict]}</span>
-      </div>
+      <span className={`m-verdict ${claim.verdict}`}>{copy.verdict[claim.verdict]}</span>
+      <h3>
+        <span className="m-sr">{copy.result.claim}: </span>„{claim.claim}”
+      </h3>
       <p className="m-sub">{copy.verdict_hint[claim.verdict]}</p>
       <p className="m-expl">{claim.explanation}</p>
-      <p className="m-sub">{copy.result.explanation_hint}</p>
       {citations.length > 0 && (
         <>
           <h4 className="m-h">{copy.result.sources_title}</h4>
