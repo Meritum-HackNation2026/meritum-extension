@@ -141,14 +141,14 @@ test('a trusted click sends the post text and address and shows the verdict with
   assert.equal(shadow(hosts('slot')[0]).textContent, '')
 })
 
-test('a post without text is not sent and says images are not checked yet', async () => {
+test('a post without text is not sent and says there is too little text to check', async () => {
   document.body.innerHTML = `<article data-testid="tweet"><div role="group"></div></article>`
   const { sent } = setup(() => assert.fail('nothing may be sent'))
 
   await click(buttonOf(0), true)
 
   assert.equal(sent.length, 0)
-  assert.ok(shadow(hosts('slot')[0]).textContent?.includes(copy.status_hint.out_of_scope_image))
+  assert.ok(shadow(hosts('slot')[0]).textContent?.includes(copy.extension.post_too_short))
 })
 
 test('no answer from the background is a technical problem, never a verdict', async () => {

@@ -7,7 +7,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { CheckResult } from '../design-system/contracts/meritum.ts'
-import { sendCheck, toCheckRequest } from './check.ts'
+import { sendCheck, sendCheckWithSession, toCheckRequest } from './check.ts'
 
 const api = 'https://api.test'
 const session = 'sesja-1234'
@@ -156,4 +156,19 @@ test('sendCheck treats citations the widget cannot render as a failure', async (
     fetchMock.mock.mockImplementation(withCitation(bad))
     assert.deepEqual(await sendCheck(api, request, session), { problem: 'failed' })
   }
+})
+
+test('sendCheckWithSession sends with the stored session id, and a broken storage is a failure', async (t) => {
+  const fetchMock = t.mock.method(globalThis, 'fetch', () =>
+    Promise.resolve(Response.json({ check_id: 'c1', result })),
+  )
+  const request = { channel: 'extension', text: 'Treść posta' } as const
+  const stored = { get: async () => ({ session_id: session }), set: async () => undefined }
+
+  assert.deepEqual(await sendCheckWithSession(api, stored, request), { result })
+  const [, init] = fetchMock.mock.calls[0]?.arguments ?? []
+  assert.equal(new Headers(init?.headers).get('X-Meritum-Session'), session)
+
+  const broken = { get: () => Promise.reject(new Error('no storage')), set: async () => undefined }
+  assert.deepEqual(await sendCheckWithSession(api, broken, request), { problem: 'failed' })
 })

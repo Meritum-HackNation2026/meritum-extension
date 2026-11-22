@@ -1,20 +1,12 @@
 import type { CheckResult, Citation, ClaimResult } from '../../design-system/contracts/meritum.ts'
 import copy from '../../design-system/copy/pl.json' with { type: 'json' }
-import type { CheckProblem, InputError } from '../../utils/check.ts'
+import type { InputError } from '../../utils/check.ts'
 import type { PostOutcome } from '../../utils/post-check.ts'
-import { limitationTexts, statusHint } from '../../utils/result-copy.ts'
-import { Mark } from './Mark.tsx'
+import { limitationTexts, problemText, statusHint } from '../../utils/result-copy.ts'
+import { Mark } from '../shared/Mark.tsx'
 
-const problemText: Record<CheckProblem, string> = {
-  rate_limited: copy.errors.rate_limited,
-  busy: copy.errors.busy,
-  offline: copy.errors.offline,
-  failed: copy.status_hint.technical_failure,
-}
-
-// A post with no text is media only (image, video): the copy for images fits it.
 const inputText: Record<InputError, string> = {
-  empty: copy.status_hint.out_of_scope_image,
+  empty: copy.extension.post_too_short,
   invalid_url: copy.errors.invalid_url,
   too_long: copy.errors.too_long,
 }
@@ -146,7 +138,7 @@ export function ResultCard({ outcome }: { outcome: PostOutcome | null }) {
       {outcome && (
         <section className="m-card" aria-label={copy.result.label}>
           <div className="m-top">
-            <Mark size={14} />
+            <Mark where="widget" size={14} />
             {copy.result.label}
           </div>
           <Outcome outcome={outcome} />

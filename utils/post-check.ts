@@ -5,9 +5,14 @@
  *
  * @feature US-WTY-01, US-WTY-04, F-02
  */
-import { type CheckOutcome, type InputError, sendCheck, toPostRequest } from './check.ts'
-import { CHECK_POST_MESSAGE } from './constants.ts'
-import { getOrCreateSessionId, type SessionStore } from './session.ts'
+import { type CheckOutcome, type InputError, sendCheckWithSession, toPostRequest } from './check.ts'
+import {
+  CHECK_POST_MESSAGE,
+  KNOWN_INPUT_ERRORS,
+  KNOWN_PROBLEMS,
+  KNOWN_STATUSES,
+} from './constants.ts'
+import type { SessionStore } from './session.ts'
 
 /**
  * What the content script sends after a trusted click: the post's text and address.
@@ -50,10 +55,31 @@ export function answerPostCheck(
   const request = toPostRequest(message.text, message.pageUrl)
   return typeof request === 'string'
     ? Promise.resolve({ input: request })
-    : getOrCreateSessionId(storage).then(
-        (id) => sendCheck(apiUrl, request, id),
-        (): PostOutcome => ({ problem: 'failed' }),
-      )
+    : sendCheckWithSession(apiUrl, storage, request)
+}
+
+/**
+ * Checks what the background replied before the widget uses it. The background validates the
+ * API answer, but a dead service worker replies `undefined` and a foreign reply is no outcome.
+ *
+ * @param reply - Whatever `runtime.sendMessage` resolved with.
+ * @returns The outcome when it has a shape the card can render, else a `failed` problem.
+ * @feature US-WTY-01, F-02
+ */
+export function toPostOutcome(reply: unknown): PostOutcome {
+  const fields =
+    typeof reply === 'object' && reply !== null ? (reply as Record<string, unknown>) : {}
+  const { result, problem, input } = fields
+  const status = (result as { status?: unknown } | null | undefined)?.status
+  const isResult = KNOWN_STATUSES.some((s) => s === status)
+  if (
+    isResult ||
+    KNOWN_PROBLEMS.some((p) => p === problem) ||
+    KNOWN_INPUT_ERRORS.some((e) => e === input)
+  ) {
+    return reply as PostOutcome
+  }
+  return { problem: 'failed' }
 }
 
 /**

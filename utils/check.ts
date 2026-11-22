@@ -23,6 +23,7 @@ import {
   POLL_MAX_ATTEMPTS,
   SESSION_HEADER,
 } from './constants.ts'
+import { getOrCreateSessionId, type SessionStore } from './session.ts'
 
 /**
  * Why the input was not sent; each is a key of `errors` in copy/pl.json.
@@ -188,4 +189,25 @@ export async function sendCheck(
     // fetch rejects with a TypeError only when the network is unreachable.
     return { problem: error instanceof TypeError ? 'offline' : 'failed' }
   }
+}
+
+/**
+ * Takes the extension's session id from storage, then {@link sendCheck}. The one path the
+ * popup and the background share, so every check carries the id „Usuń” deletes by.
+ *
+ * @param apiUrl - Base address of the verification core.
+ * @param storage - chrome.storage.local holding the session id.
+ * @param request - A request from {@link toCheckRequest} or {@link toPostRequest}.
+ * @returns The outcome; an unusable storage is a `failed` problem, never a throw.
+ * @feature US-WTY-02, US-WTY-04, US-BEZ-05, F-02
+ */
+export function sendCheckWithSession(
+  apiUrl: string,
+  storage: SessionStore,
+  request: CheckRequest,
+): Promise<CheckOutcome> {
+  return getOrCreateSessionId(storage).then(
+    (id) => sendCheck(apiUrl, request, id),
+    (): CheckOutcome => ({ problem: 'failed' }),
+  )
 }

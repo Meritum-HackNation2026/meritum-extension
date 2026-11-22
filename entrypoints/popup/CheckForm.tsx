@@ -1,7 +1,7 @@
 import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react'
 import copy from '../../design-system/copy/pl.json' with { type: 'json' }
-import { type CheckOutcome, sendCheck, toCheckRequest } from '../../utils/check.ts'
-import { getOrCreateSessionId, type SessionStore } from '../../utils/session.ts'
+import { type CheckOutcome, sendCheckWithSession, toCheckRequest } from '../../utils/check.ts'
+import type { SessionStore } from '../../utils/session.ts'
 import { CheckAnswer } from './CheckAnswer.tsx'
 
 /**
@@ -35,11 +35,7 @@ export function CheckForm({ apiUrl, storage }: { apiUrl: string; storage: Sessio
       }
       setBusy(true)
       setOutcome(null)
-      const outcome = await getOrCreateSessionId(storage).then(
-        (id) => sendCheck(apiUrl, request, id),
-        (): CheckOutcome => ({ problem: 'failed' }),
-      )
-      setOutcome(outcome)
+      setOutcome(await sendCheckWithSession(apiUrl, storage, request))
       setBusy(false)
     },
     [apiUrl, storage, value],
