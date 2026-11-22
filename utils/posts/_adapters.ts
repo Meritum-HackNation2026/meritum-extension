@@ -54,8 +54,9 @@ const parts: Record<Platform, Parts> = {
     mount(post, button, slot) {
       const bar = post.querySelector(x.bar)
       if (!bar) return false
-      const bookmark = bar.querySelector(x.before)
-      bar.insertBefore(button, [...bar.children].find((c) => c.contains(bookmark)) ?? null)
+      // Last in the bar: bookmark and share render later than the rest, so „before the
+      // bookmark” landed on either side of it.
+      bar.append(button)
       bar.after(slot)
       return true
     },

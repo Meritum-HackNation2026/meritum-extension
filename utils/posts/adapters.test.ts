@@ -71,12 +71,12 @@ for (const platform of Object.keys(markup) as Platform[]) {
   })
 }
 
-test('x: the button goes into the action bar before the bookmark', () => {
+test('x: the button is the last item of the action bar', () => {
   const adapter = postAdapter('x', () => 'https://x.com/')
   const [post] = adapter.posts(page(markup.x)) as [Element]
   const button = document.createElement('meritum-root')
   adapter.mount(post, button, document.createElement('meritum-root'))
-  assert.equal(button.nextElementSibling?.querySelector('[data-testid="bookmark"]') !== null, true)
+  assert.equal(post.querySelector('[role="group"]')?.lastElementChild, button)
 })
 
 test('facebook: emptied virtualised units and units without an author are not posts', () => {

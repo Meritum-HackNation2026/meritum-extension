@@ -18,7 +18,6 @@ export const POST_SELECTORS = {
     text: '[data-testid="tweetText"]',
     link: 'a[href*="/status/"]',
     bar: '[role="group"]',
-    before: '[data-testid="bookmark"]',
   },
   facebook: {
     author: '[data-ad-rendering-role="profile_name"]',
