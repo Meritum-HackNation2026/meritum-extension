@@ -6,7 +6,7 @@
  */
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { CheckRequest, CheckResult } from '../../design-system/contracts/meritum.ts'
 import copy from '../../design-system/copy/pl.json' with { type: 'json' }
 import { App } from '../../entrypoints/popup/App.tsx'
@@ -54,6 +54,16 @@ function ask(value: string) {
   fireEvent.click(screen.getByRole('button', { name: copy.form.submit }))
 }
 
+/**
+ * Waits for the popup's own async work to end: the health badge has an answer and the submit
+ * button is back (setBusy(false) runs after the outcome is shown). Without it a test can end
+ * while that work is pending and it fires after teardown ("window is not defined").
+ */
+async function settled() {
+  await screen.findByRole('button', { name: copy.form.submit })
+  await waitFor(() => assert.ok(!screen.queryByText(copy.extension.popup_connecting)))
+}
+
 test('on first opening the popup says an AI answers and nothing is sent without a click', (t) => {
   const api = fakeApi()
   t.mock.method(globalThis, 'fetch', api.handler)
@@ -81,6 +91,7 @@ test('a pasted link goes to POST /api/v1/checks on the extension channel and the
   assert.equal(sent?.url, 'https://example.pl/artykul')
   assert.match(String(sent?.session_id), uuidV4)
   assert.deepEqual(api.sessions, [sent?.session_id])
+  await settled()
 })
 
 test('a check from the popup carries the stored session id in X-Meritum-Session', async (t) => {
@@ -92,6 +103,7 @@ test('a check from the popup carries the stored session id in X-Meritum-Session'
   ask('Od stycznia nie zapłacisz gotówką')
 
   assert.ok(await screen.findByText(copy.verdict.false))
+  await settled()
   assert.deepEqual(api.sessions, ['sesja-1234'])
   assert.deepEqual(api.sent, [
     { channel: 'extension', text: 'Od stycznia nie zapłacisz gotówką', session_id: 'sesja-1234' },
@@ -119,6 +131,7 @@ test('a rejected input clears the previous answer', async (t) => {
 
   assert.equal(screen.getByRole('alert').textContent, copy.errors.empty)
   assert.ok(!screen.queryByText(copy.verdict.false), 'the old verdict is gone')
+  await settled()
 })
 
 test('a check with no claims says that no result is not a denial', async (t) => {
@@ -133,6 +146,7 @@ test('a check with no claims says that no result is not a denial', async (t) => 
   ask('Od stycznia nie zapłacisz w sklepie gotówką')
 
   assert.ok(await screen.findByText(copy.result.no_result_hint))
+  await settled()
 })
 
 test('a rate-limited check shows the message, never a verdict', async (t) => {
@@ -146,6 +160,7 @@ test('a rate-limited check shows the message, never a verdict', async (t) => {
   ask('Od stycznia nie zapłacisz w sklepie gotówką')
 
   assert.ok(await screen.findByText(copy.errors.rate_limited))
+  await settled()
 })
 
 test('Esc closes the popup', (t) => {
