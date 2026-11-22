@@ -20,9 +20,21 @@ export type PostCheckProps = {
   slot: Element
 }
 
-function label(busy: boolean, outcome: PostOutcome | null): string {
-  if (busy) return copy.form.checking
+// The label never changes while checking: a longer word would push the host's own actions
+// aside. „Sprawdzamy…” shows under the post instead, where there is room.
+function label(outcome: PostOutcome | null): string {
   return outcome && 'result' in outcome ? copy.extension.checked : copy.extension.check
+}
+
+function Checking() {
+  return (
+    <div className="m-proc" role="status">
+      <p className="m-proc-h">
+        <Mark where="widget" size={14} />
+        {copy.form.checking}
+      </p>
+    </div>
+  )
 }
 
 /**
@@ -67,9 +79,15 @@ export function PostCheck({ read, send, slot }: PostCheckProps) {
         onClick={check}
       >
         <Mark where="widget" size={18} />
-        <span>{label(busy, outcome)}</span>
+        <span>{label(outcome)}</span>
       </button>
-      {createPortal(<ResultCard outcome={outcome} />, slot)}
+      {createPortal(
+        <>
+          {busy && <Checking />}
+          <ResultCard outcome={outcome} />
+        </>,
+        slot,
+      )}
     </>
   )
 }

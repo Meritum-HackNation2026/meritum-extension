@@ -71,12 +71,12 @@ for (const platform of Object.keys(markup) as Platform[]) {
   })
 }
 
-test('x: the button goes into the action bar before the bookmark', () => {
+test('x: the button is the last item of the action bar', () => {
   const adapter = postAdapter('x', () => 'https://x.com/')
   const [post] = adapter.posts(page(markup.x)) as [Element]
   const button = document.createElement('meritum-root')
   adapter.mount(post, button, document.createElement('meritum-root'))
-  assert.equal(button.nextElementSibling?.querySelector('[data-testid="bookmark"]') !== null, true)
+  assert.equal(post.querySelector('[role="group"]')?.lastElementChild, button)
 })
 
 test('facebook: emptied virtualised units and units without an author are not posts', () => {
@@ -117,4 +117,48 @@ test('a post link the URL parser rejects falls back to the page address', () => 
   const markup = '<article data-testid="tweet"><a href="http://[zly/status/1">x</a></article>'
   const [post] = adapter.posts(page(markup)) as [Element]
   assert.equal(adapter.url(post), 'https://x.com/home')
+})
+
+test('facebook: on the real site the button joins the row that holds like and share', () => {
+  // Each action sits in its own column box; the row is their common ancestor.
+  const adapter = postAdapter('facebook', () => 'https://www.facebook.com/')
+  const [post] = adapter.posts(
+    page(`<div data-virtualized="false"><span data-ad-rendering-role="profile_name">Ktoś</span>
+      <div class="row">
+        <div class="col"><div role="button"><span data-ad-rendering-role="like_button"></span></div></div>
+        <div class="col"><div role="button"><span data-ad-rendering-role="share_button"></span></div></div>
+        <div class="col">reakcje</div>
+      </div></div>`),
+  ) as [Element]
+  const button = document.createElement('meritum-root')
+  const slot = document.createElement('meritum-root')
+  assert.equal(adapter.mount(post, button, slot), true)
+  const row = post.querySelector('.row')
+  assert.equal(button.parentElement, row)
+  assert.equal(
+    button.previousElementSibling?.querySelector('[data-ad-rendering-role="share_button"]') !==
+      null,
+    true,
+  )
+  assert.equal(row?.nextElementSibling, slot)
+})
+
+test('reddit: a promoted post is a post, with its title and advertised address', () => {
+  const adapter = postAdapter('reddit', () => 'https://www.reddit.com/')
+  const posts = adapter.posts(
+    page(`<article><shreddit-ad-post post-title="Zarabiaj 1 200 zł dziennie"
+      href="https://inwest.example/wywiad"></shreddit-ad-post></article>`),
+  )
+  assert.equal(posts.length, 1)
+  const [ad] = posts as [Element]
+  assert.equal(adapter.text(ad), 'Zarabiaj 1 200 zł dziennie')
+  assert.equal(adapter.url(ad), 'https://inwest.example/wywiad')
+})
+
+test('tiktok: the result floats over the video frame, not over the action column', () => {
+  const adapter = postAdapter('tiktok', () => 'https://www.tiktok.com/')
+  const [post] = adapter.posts(page(markup.tiktok)) as [Element]
+  const slot = document.createElement('meritum-root')
+  adapter.mount(post, document.createElement('meritum-root'), slot)
+  assert.equal(slot.parentElement?.getAttribute('data-e2e'), 'feed-video')
 })

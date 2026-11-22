@@ -7,7 +7,8 @@
 /**
  * Where posts, their text, their own link and the „Sprawdź” anchor are on each platform
  * (design-system/demo/platforms/SELECTORS.md; never by class, the sites hash them).
- * Reddit keeps the title and link in attributes of `shreddit-post` and gets its own row.
+ * Reddit keeps the title and link in attributes of `shreddit-post` (and `shreddit-ad-post`)
+ * and gets its own row.
  *
  * @feature US-WTY-01, US-WTY-05, ADR-10
  */
@@ -17,13 +18,13 @@ export const POST_SELECTORS = {
     text: '[data-testid="tweetText"]',
     link: 'a[href*="/status/"]',
     bar: '[role="group"]',
-    before: '[data-testid="bookmark"]',
   },
   facebook: {
     author: '[data-ad-rendering-role="profile_name"]',
     unit: '[data-virtualized]',
     text: '[data-ad-preview="message"]',
     link: 'a[href*="/posts/"], a[href*="/videos/"], a[href*="story_fbid"]',
+    like: '[data-ad-rendering-role="like_button"]',
     share: '[data-ad-rendering-role="share_button"]',
     button: '[role="button"]',
   },
@@ -37,10 +38,13 @@ export const POST_SELECTORS = {
     bar: 'section',
   },
   reddit: {
-    post: 'shreddit-post',
+    // Promoted posts are where the scams are, so they get „Sprawdź” too.
+    post: 'shreddit-post, shreddit-ad-post',
     text: '[slot="text-body"]',
     title: 'post-title',
     link: 'permalink',
+    // An ad has no permalink, only the address it advertises.
+    adLink: 'href',
   },
   tiktok: {
     post: 'article[data-e2e="recommend-list-item-container"]',

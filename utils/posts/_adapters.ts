@@ -38,6 +38,14 @@ const textOf = (el: Element | null | undefined) =>
 
 const { x, facebook, instagram, reddit, tiktok } = POST_SELECTORS
 
+// The nearest element that contains both, or null when they share no ancestor.
+function commonAncestor(a: Element, b: Element): Element | null {
+  for (let el: Element | null = a.parentElement; el; el = el.parentElement) {
+    if (el.contains(b)) return el
+  }
+  return null
+}
+
 const parts: Record<Platform, Parts> = {
   x: {
     posts: (root) => all(root, x.post),
@@ -46,8 +54,9 @@ const parts: Record<Platform, Parts> = {
     mount(post, button, slot) {
       const bar = post.querySelector(x.bar)
       if (!bar) return false
-      const bookmark = bar.querySelector(x.before)
-      bar.insertBefore(button, [...bar.children].find((c) => c.contains(bookmark)) ?? null)
+      // Last in the bar: bookmark and share render later than the rest, so „before the
+      // bookmark” landed on either side of it.
+      bar.append(button)
       bar.after(slot)
       return true
     },
@@ -67,9 +76,14 @@ const parts: Record<Platform, Parts> = {
     href: (post) => post.querySelector(facebook.link)?.getAttribute('href'),
     mount(post, button, slot) {
       const share = post.querySelector(facebook.share)?.closest(facebook.button)
-      const row = share?.parentElement
+      if (!share) return false
+      // The real site wraps each action in its own column box: the bar is the box that holds
+      // both „Lubię to” and „Udostępnij”, and „Sprawdź” goes right after the share action there.
+      const like = post.querySelector(facebook.like)
+      const row = (like && commonAncestor(share, like)) ?? share.parentElement
       if (!row) return false
-      row.append(button)
+      const shareItem = [...row.children].find((c) => c.contains(share)) ?? null
+      row.insertBefore(button, shareItem?.nextSibling ?? null)
       row.after(slot)
       return true
     },
@@ -94,7 +108,7 @@ const parts: Record<Platform, Parts> = {
       [post.getAttribute(reddit.title), textOf(post.querySelector(reddit.text))]
         .filter(Boolean)
         .join('\n'),
-    href: (post) => post.getAttribute(reddit.link),
+    href: (post) => post.getAttribute(reddit.link) ?? post.getAttribute(reddit.adLink),
     mount(post, button, slot) {
       post.after(button, slot)
       return true
@@ -108,8 +122,9 @@ const parts: Record<Platform, Parts> = {
       const share = post.querySelector(tiktok.share)
       if (!share) return false
       share.after(button)
-      // No room under a full-height video: the slot floats over its bottom.
-      const media = post.querySelector(tiktok.video)?.parentElement ?? post
+      // No room under a full-height video: the slot floats over the bottom of the video frame
+      // itself; its parent on the real site is wider and also holds the action column.
+      const media = post.querySelector(tiktok.video) ?? post
       const isStatic = getComputedStyle(media).position === 'static'
       if (isStatic && media instanceof HTMLElement) media.style.position = 'relative'
       slot.setAttribute('style', TIKTOK_SLOT_STYLE)

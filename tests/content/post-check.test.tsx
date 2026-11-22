@@ -203,3 +203,16 @@ test('on a dark page every widget host gets the dark class of widget.css', () =>
     assert.equal(host.classList.contains(DARK_CLASS), true)
   }
 })
+
+test('while checking the button keeps its label and „Sprawdzamy…” shows under the post', async () => {
+  feed(1)
+  let answer: (o: PostOutcome) => void = () => undefined
+  setup(() => new Promise<PostOutcome>((resolve) => (answer = resolve)))
+  await click(buttonOf(0), true)
+  const slot = shadow(hosts('slot')[0])
+  assert.equal(buttonOf(0).textContent, copy.extension.check)
+  assert.equal(buttonOf(0).getAttribute('aria-busy'), 'true')
+  assert.equal(slot.querySelector('[role="status"]')?.textContent, copy.form.checking)
+  await act(async () => answer({ problem: 'failed' }))
+  assert.equal(slot.querySelector('[role="status"]'), null)
+})

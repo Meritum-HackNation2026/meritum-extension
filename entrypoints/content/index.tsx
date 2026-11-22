@@ -10,6 +10,8 @@ import { platformOf } from '../../utils/platform.ts'
 import { type PostCheckMessage, type PostOutcome, toPostOutcome } from '../../utils/post-check.ts'
 import { postAdapter } from '../../utils/posts/index.ts'
 import { isDarkBackground } from '../../utils/theme.ts'
+import { CONTENT_MATCHES } from './constants.ts'
+import { registerFonts } from './fonts.ts'
 import { scanner } from './mount.tsx'
 
 // Computed background of <body>, then <html>; with neither opaque, the system setting.
@@ -41,17 +43,7 @@ function followTheme(): void {
  * @feature US-WTY-01, US-WTY-04, US-WTY-05, F-02, ADR-09, ADR-10
  */
 export default defineContentScript({
-  matches: [
-    '*://x.com/*',
-    '*://*.x.com/*',
-    '*://twitter.com/*',
-    '*://*.twitter.com/*',
-    '*://*.facebook.com/*',
-    '*://*.instagram.com/*',
-    '*://*.reddit.com/*',
-    '*://*.tiktok.com/*',
-    'https://*.gburek.app/*',
-  ],
+  matches: CONTENT_MATCHES,
   runAt: 'document_idle',
   main() {
     const platform = platformOf(location.hostname)
@@ -59,6 +51,8 @@ export default defineContentScript({
     document.documentElement.dataset['meritumPlatform'] = platform
     const sheet = new CSSStyleSheet()
     sheet.replaceSync(widgetCss)
+    // A font that fails to load leaves the fallback face; the widget still works.
+    registerFonts(sheet).catch(() => undefined)
     const scan = scanner({
       platform,
       adapter: postAdapter(platform, () => location.href),
